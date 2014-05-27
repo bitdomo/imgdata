@@ -6,8 +6,7 @@
 int main(int argc, char **argv){
 
 	char IMGDATA_HEADER[] = { 'I','M','G','D','A','T','A','!' , 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-	char debug[] = "bootloader.imgdata.img";
-	extract(debug);
+	
 	if (argc == 1){
 		printf("\n%s extract <imgdata file>\n%s build_imgdata\n", argv[0], argv[0]);
 		return 0;
