@@ -93,6 +93,10 @@ void extract(char *input){
 		fclose(O);
 	}
 	O = fopen(".\\images\\pos.txt", "wb");
+	if (O == NULL){
+			printf("Could not create pos.txt.\nMake sure you have the \"images\" folder");
+			return;
+		}
 	for (i = 0; i < 12; i++){
 		strcpy(file_path, RAW_IMAGE_HEADERS[i].name);
 		fwrite(file_path, sizeof(char), strlen(file_path), O);
