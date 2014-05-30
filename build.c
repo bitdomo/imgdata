@@ -1,9 +1,19 @@
+#ifdef __unix__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "extract.h"
 #include "build.h"
 
+#elif defined(_WIN32) || defined(WIN32)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "extract.h"
+#include "build.h"
+
+#define OS_Windows
+#endif
 int build_imgdata(){
 	char c = 0, R = 0, G = 0, B = 0;
 	char x_pos[5] = { 0 };
@@ -12,22 +22,38 @@ int build_imgdata(){
 	char IMGDATA_HEADER[] = { 'I', 'M', 'G', 'D', 'A', 'T', 'A', '!', 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	char file_path[256] = { 0 };
 	BMP_PIXEL pixels[12] = { NULL };
-	size_t line_length = 0;
-	size_t i = 0, j = 0, k = 0, l = 0;
-	size_t extra = 0;
-	size_t for_check = 0;
-	raw_image_header RAW_IMAGE_HEADERS[12] = {0};
-	raw_images *RAW_IMAGES[12] = { NULL };
+	unsigned int i = 0, j = 0, k = 0;
+	unsigned int extra = 0;
+	unsigned int for_check = 0;
+	raw_image_header RAW_IMAGE_HEADERS[12] = { 0 };
+	raw_images *RAW_IMAGES[12] = {NULL};
 	raw_images *cur = NULL;
 	FILE *I = NULL;
 	FILE *O = NULL;
-
+		
+	/*for (i = 0; i < 12; i++){
+		RAW_IMAGES[i] = (raw_images*)malloc(sizeof(raw_images));
+		RAW_IMAGES[i]->B = 0;
+		RAW_IMAGES[i]->G = 0;
+		RAW_IMAGES[i]->R = 0;
+		RAW_IMAGES[i]->count = 0;
+		RAW_IMAGES[i]->next = NULL;
+	}
+		*/
 	printf("Reading pos.txt...");
+#ifdef OS_Windows
 	I = fopen(".\\images\\pos.txt", "rb");
 	if (I == NULL){
-		printf("Could not open .\\images\\pos.txt\n");
+		printf("FAIL!\nCould not open .\\images\\pos.txt\n");
 		return -1;
 	}
+#else
+	I = fopen("./images/pos.txt", "rb");
+	if (I == NULL){
+		printf("FAIL!\nCould not open ./images/pos.txt\n");
+		return -1;
+	}
+#endif
 	for (i = 0; i < 12; i++){
 		c = fgetc(I);
 		while (c != 0x20){
@@ -36,14 +62,22 @@ int build_imgdata(){
 			c = fgetc(I);
 			if (j>15){
 				RAW_IMAGE_HEADERS[i].name[15] = '\0';
-				printf("FAIL!\nUnknown name \"%s\" at line %d in .\\images\\pos.txt\n", RAW_IMAGE_HEADERS[i].name, i + 1);
+#ifdef OS_Windows
+				printf("FAIL!\nUnknown name \"%s\" at line %u in .\\images\\pos.txt\n", RAW_IMAGE_HEADERS[i].name, i + 1);
+#else
+				printf("FAIL!\nUnknown name \"%s\" at line %u in ./images/pos.txt\n", RAW_IMAGE_HEADERS[i].name, i + 1);
+#endif
 				fclose(I);
 				return -1;
 			}
 		}
 		RAW_IMAGE_HEADERS[i].name[j] = '\0';
 		if (!(strcmp(names[i], RAW_IMAGE_HEADERS[i].name) == 0)){
-			printf("FAIL!\nUnknown name \"%s\" at line %d in .\\images\\pos.txt", RAW_IMAGE_HEADERS[i].name, i + 1);
+#ifdef OS_Windows
+			printf("FAIL!\nUnknown name \"%s\" at line %u in .\\images\\pos.txt", RAW_IMAGE_HEADERS[i].name, i + 1);
+#else
+			printf("FAIL!\nUnknown name \"%s\" at line %u in ./images/pos.txt", RAW_IMAGE_HEADERS[i].name, i + 1);
+#endif
 			fclose(I);
 			return -1;
 		}
@@ -55,7 +89,11 @@ int build_imgdata(){
 			j++;
 			c = fgetc(I);
 			if (j > 4){
+#ifdef OS_Windows
 				printf("FAIL!\nCheck \"%s\" in .\\images\\pos.txt\nX position must be maximum 4 digits long\nCheck for the \"x\" too", RAW_IMAGE_HEADERS[i].name);
+#else
+				printf("FAIL!\nCheck \"%s\" in ./images/pos.txt\nX position must be maximum 4 digits long\nCheck for the \"x\" too", RAW_IMAGE_HEADERS[i].name);
+#endif
 				fclose(I);
 				return -1;
 			}
@@ -63,7 +101,7 @@ int build_imgdata(){
 		x_pos[j] = '\0';
 		RAW_IMAGE_HEADERS[i].x_pos = atoi(x_pos);
 		if (RAW_IMAGE_HEADERS[i].x_pos > 1079){
-			printf("FAIL\nX position %Iu is exceeded the maximum 1079 for %s", RAW_IMAGE_HEADERS[i].x_pos,RAW_IMAGE_HEADERS[i].name);
+			printf("FAIL\nX position %u is exceeded the maximum 1079 for %s", RAW_IMAGE_HEADERS[i].x_pos,RAW_IMAGE_HEADERS[i].name);
 			fclose(I);
 			return -1;
 		}
@@ -75,7 +113,11 @@ int build_imgdata(){
 			j++;
 			c = fgetc(I);
 			if (j > 4){
+#ifdef OS_Windows
 				printf("FAIL!\nCheck \"%s\" .\\images\\pos.txt\nY position must be maximum 4 digits long\nCheck for new line too", RAW_IMAGE_HEADERS[i].name);
+#else
+				printf("FAIL!\nCheck \"%s\" ./images/pos.txt\nY position must be maximum 4 digits long\nCheck for new line too", RAW_IMAGE_HEADERS[i].name);
+#endif
 				fclose(I);
 				return -1;
 			}
@@ -83,7 +125,7 @@ int build_imgdata(){
 		y_pos[j] = '\0';
 		RAW_IMAGE_HEADERS[i].y_pos = atoi(y_pos);
 		if (RAW_IMAGE_HEADERS[i].y_pos > 1919){
-			printf("FAIL\nY position %Iu is exceeded the maximum 1919 for %s", RAW_IMAGE_HEADERS[i].y_pos, RAW_IMAGE_HEADERS[i].name);
+			printf("FAIL\nY position %u is exceeded the maximum 1919 for %s", RAW_IMAGE_HEADERS[i].y_pos, RAW_IMAGE_HEADERS[i].name);
 			fclose(I);
 			return -1;
 		}
@@ -95,7 +137,11 @@ int build_imgdata(){
 	printf("Done\n");
 	fclose(I);
 	for (i = 0; i < 12; i++){
+#ifdef OS_Windows
 		strcpy(file_path, ".\\images\\");
+#else
+		strcpy(file_path, "./images/");
+#endif
 		strcat(file_path, RAW_IMAGE_HEADERS[i].name);
 		strcat(file_path, ".bmp");
 		I = fopen(file_path, "rb");
@@ -103,10 +149,10 @@ int build_imgdata(){
 			printf("\nCould not open %s\n", file_path);
 			return -1;
 		}
-		
+
 		printf("\nChecking %s...", file_path);
-		if (c = fgetc(I) == 'B'){
-			if (c = fgetc(I) != 'M'){
+		if ((c = fgetc(I)) == 'B'){
+			if ((c = fgetc(I)) != 'M'){
 				printf("FAIL!\n%s is not a Windows BMP file\n", file_path);
 				fclose(I);
 				return -1;
@@ -117,51 +163,51 @@ int build_imgdata(){
 			fclose(I);
 			return -1;
 		}
-		fread(&for_check, sizeof(size_t), 1, I);
+		fread(&for_check, sizeof(unsigned int), 1, I);
 		fseek(I, 0L, SEEK_END);
 		if (ftell(I) != for_check){
-			printf("FAIL!\n%s is a damaged Windows BMP file\nFile size mismatch: %Iu bytes, expected %Iu bytes\n", file_path,ftell(I),for_check);
+			printf("FAIL!\n%s is a damaged Windows BMP file\nFile size mismatch: %lu bytes, expected %u bytes\n", file_path,ftell(I),for_check);
 			fclose(I);
 			return -1;
 		}
 		fseek(I, 0x1C, SEEK_SET);
-		if (c = fgetc(I) != 0x18){
+		if ((c = fgetc(I)) != 0x18){
 			printf("FAIL!\n%s is not a 24 bit Windows BMP file\n", file_path);
 			fclose(I);
 			return -1;
 		}
 		fseek(I, 0x1E, SEEK_SET);
-		fread(&for_check, sizeof(size_t), 1, I);
+		fread(&for_check, sizeof(unsigned int), 1, I);
 		if (for_check != 0){
 			printf("FAIL!\n%s is a compressed Windows BMP file\nCompressed Windows BMP files are not supported\n", file_path);
 			fclose(I);
 			return -1;
 		}
 		fseek(I, 0x12, SEEK_SET);
-		fread(&RAW_IMAGE_HEADERS[i].width, sizeof(size_t), 1, I);
-		fread(&RAW_IMAGE_HEADERS[i].height, sizeof(size_t), 1, I);
+		fread(&RAW_IMAGE_HEADERS[i].width, sizeof(unsigned int), 1, I);
+		fread(&RAW_IMAGE_HEADERS[i].height, sizeof(unsigned int), 1, I);
 		if ((RAW_IMAGE_HEADERS[i].width == 0) || (RAW_IMAGE_HEADERS[i].width > 1080)){
-			printf("FAIL!\n%s is too wide\nImage width is %Iu pixels\nMaximum witdth is 1080 pixels\n", file_path, RAW_IMAGE_HEADERS[i].width);
+			printf("FAIL!\n%s is too wide\nImage width is %u pixels\nMaximum witdth is 1080 pixels\n", file_path, RAW_IMAGE_HEADERS[i].width);
 			fclose(I);
 			return -1;
 		}
 		if ((RAW_IMAGE_HEADERS[i].height == 0) || (RAW_IMAGE_HEADERS[i].height > 1920)){
-			printf("FAIL!\n%s is too high\nImage height is %Iu pixels\nMaximum height is 1920 pixels\n", file_path, RAW_IMAGE_HEADERS[i].height);
+			printf("FAIL!\n%s is too high\nImage height is %u pixels\nMaximum height is 1920 pixels\n", file_path, RAW_IMAGE_HEADERS[i].height);
 			fclose(I);
 			return -1;
 		}
 		if (RAW_IMAGE_HEADERS[i].width + RAW_IMAGE_HEADERS[i].x_pos > 1080){
-			printf("FAIL!\n%s is off the screen by %Iu pixel(s) horizontaly\nCheck X position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].width + RAW_IMAGE_HEADERS[i].x_pos - 1080);
+			printf("FAIL!\n%s is off the screen by %u pixel(s) horizontaly\nCheck X position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].width + RAW_IMAGE_HEADERS[i].x_pos - 1080);
 			if (RAW_IMAGE_HEADERS[i].height + RAW_IMAGE_HEADERS[i].y_pos > 1920){
-				printf("%s is off the screen by %Iu pixel(s) verticaly\nCheck y position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].height + RAW_IMAGE_HEADERS[i].y_pos - 1920);
+				printf("%s is off the screen by %u pixel(s) verticaly\nCheck y position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].height + RAW_IMAGE_HEADERS[i].y_pos - 1920);
 			}
 			fclose(I);
 			return -1;
 		}
 		if(RAW_IMAGE_HEADERS[i].height + RAW_IMAGE_HEADERS[i].y_pos > 1920){
-			printf("FAIL!\n%s is off the screen by %Iu pixel(s) verticaly\nCheck y position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].height + RAW_IMAGE_HEADERS[i].y_pos - 1920);
+			printf("FAIL!\n%s is off the screen by %u pixel(s) verticaly\nCheck y position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].height + RAW_IMAGE_HEADERS[i].y_pos - 1920);
 			if (RAW_IMAGE_HEADERS[i].width + RAW_IMAGE_HEADERS[i].x_pos > 1080){
-				printf("%s is off the screen by %Iu pixel(s) horizontaly\nCheck X position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].width + RAW_IMAGE_HEADERS[i].x_pos - 1080);
+				printf("%s is off the screen by %u pixel(s) horizontaly\nCheck X position and the image dimensions\n", file_path, RAW_IMAGE_HEADERS[i].width + RAW_IMAGE_HEADERS[i].x_pos - 1080);
 			}
 			fclose(I);
 			return -1;
@@ -188,7 +234,13 @@ int build_imgdata(){
 		printf("Done\n");
 	}
 	for (i = 0; i < 12; i++){
+
+#ifdef OS_Windows
 		printf("\nConverting .\\images\\%s.bmp...", RAW_IMAGE_HEADERS[i].name);
+#else
+		printf("\nConverting ./images/%s.bmp...", RAW_IMAGE_HEADERS[i].name);
+#endif
+		
 		if (i == 0){
 			RAW_IMAGE_HEADERS[i].offset = 0x400;
 		}

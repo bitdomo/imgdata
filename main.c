@@ -1,27 +1,46 @@
+#ifdef __unix__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "extract.h"
 #include "build.h"
-/*
+
 #include <time.h>
-#include <Windows.h>
+#elif defined(_WIN32) || defined(WIN32)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "extract.h"
+#include "build.h"
+
+#include <time.h>
+
+#define OS_Windows
+#endif
 void random_bmp(){
-	char R = 0, G = 0, B = 0,c = 0;
+	char c = 0;
 	char BMP_HEADER1[] = "BM";
 	char BMP_HEADER2[] = { 0x00, 0x00, 0x00, 0x00, 0x36, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00 };
 	char BMP_HEADER3[28] = { 0x01, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	char file_path[256] = { 0 };
 	char *names[] = { "boot", "charger", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode" };
-	size_t extra = 0, BMP_SIZE = 0;
+	unsigned int extra = 0, BMP_SIZE = 0;
 	FILE *O= NULL;
-	size_t i = 0, j = 0, k = 0, l = 0, m = 0, width = 0, height = 0;
+	unsigned int i = 0, j = 0, k = 0, l = 0, m = 0, width = 0, height = 0;
 	srand(time(NULL));
 	for (i = 0; i < 12; i++){
+#ifdef OS_Windows
 		strcpy(file_path, ".\\images\\");
+#else
+		strcpy(file_path, "./images/");
+#endif
 		strcat(file_path, names[i]);
 		strcat(file_path, ".bmp");
 		O = fopen(file_path, "wb");
+		if (O == NULL){
+			printf("DEBUG ERROR\nNo images folder\n");
+			return;
+		}
 		width = rand() % 1080 + 1;
 		height = rand() % 1920 + 1;
 		if (4 - ((width * 3) % 4) == 4){
@@ -32,15 +51,15 @@ void random_bmp(){
 		}
 		BMP_SIZE = width * height * 3 + 54 + height * extra;
 		fwrite(BMP_HEADER1, sizeof(char), sizeof(BMP_HEADER1)-1, O);
-		fwrite(&BMP_SIZE, sizeof(size_t), 1, O);
+		fwrite(&BMP_SIZE, sizeof(unsigned int), 1, O);
 		fwrite(BMP_HEADER2, sizeof(char), sizeof(BMP_HEADER2), O);
-		fwrite(&width, sizeof(size_t), 1, O);
-		fwrite(&height, sizeof(size_t), 1, O);
+		fwrite(&width, sizeof(unsigned int), 1, O);
+		fwrite(&height, sizeof(unsigned int), 1, O);
 		fwrite(BMP_HEADER3, sizeof(char), sizeof(BMP_HEADER3), O);
 		j = 0;
 		while (j < BMP_SIZE - 54){
 			c = rand() % 256;
-			for (k = (rand() % 2073600 + 1); k != 0; k--){
+			for (k = (rand() % 2073 + 1); k != 0; k--){
 				if (j == BMP_SIZE - 54){
 					break;
 				}
@@ -65,10 +84,11 @@ void random_bmp(){
 		fclose(O);
 	}
 }
-*/
+
 int main(int argc, char **argv){
-	size_t i = 0, j = 0;
-	
+	unsigned int i = 0, j = 0;
+	int error = 0;
+
 	if (argc == 1){
 		printf("\n%s extract <imgdata file>\n%s build-imgdata\n", argv[0], argv[0]);
 		return 0;
@@ -82,10 +102,10 @@ int main(int argc, char **argv){
 		printf("\nToo much arguments\n");
 		return 0;
 	}
-	/*	if ((strcmp(argv[1], "debug") == 0) && argc == 3){
+	if ((strcmp(argv[1], "debug") == 0) && argc == 3){
 		j = atoi(argv[2]);
 		for (i =0; i < j; i++){
-			printf("\n                    ----------------------------------------\n                                       %Iu\n                    ----------------------------------------\n\n", i+1);
+			printf("\n                    ----------------------------------------\n                                       %u\n                    ----------------------------------------\n\n", i+1);
 			random_bmp();
 			if (build_imgdata() == -1){
 				printf("BUILD ERROR");
@@ -98,13 +118,16 @@ int main(int argc, char **argv){
 		}
 		return 0;
 	}
-	*/
+
 	if (((strcmp(argv[1], "extract") == 0) || (strcmp(argv[1], "build-imgdata") == 0)) == 0){
 		printf("\n%s extract <imgdata file>\n%s build-imgdata\n\nInvalid argument: %s \n", argv[0], argv[0], argv[1]);
 		return 0;
 	}
 	if ((strcmp(argv[1], "extract") == 0) && argc == 3){
-		extract(argv[2]);
+		error=extract(argv[2]);
+		if (error != 0){
+			return error;
+		}
 	}
 	else{
 		if (!(strcmp(argv[1], "build-imgdata") == 0)){
@@ -112,7 +135,10 @@ int main(int argc, char **argv){
 		}
 	}
 	if ((strcmp(argv[1], "build-imgdata") == 0) && argc == 2){
-		build_imgdata();
+		error=build_imgdata();
+		if (error != 0){
+			return error;
+		}
 	}
 	else{
 		if (!(strcmp(argv[1], "extract") == 0)){

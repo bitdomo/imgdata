@@ -3,12 +3,12 @@
 
 typedef struct raw_image_header{
 	char name[16];
-	size_t width;
-	size_t height;
-	size_t x_pos;
-	size_t y_pos;
-	size_t offset;
-	size_t size;
+	unsigned int width;
+	unsigned int height;
+	unsigned int x_pos;
+	unsigned int y_pos;
+	unsigned int offset;
+	unsigned int size;
 }raw_image_header;
 
 int extract(char *input);
