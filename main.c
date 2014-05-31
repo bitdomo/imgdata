@@ -1,24 +1,12 @@
-#ifdef __unix__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "extract.h"
 #include "build.h"
-
-#include <time.h>
-#elif defined(_WIN32) || defined(WIN32)
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "extract.h"
-#include "build.h"
-
 #include <time.h>
 
-#define OS_Windows
-#endif
-void random_bmp(){
-	char c = 0;
+void random_bmp(){	// Just for debugging. Creates random images.
+	char c = 0;		// Build the random images to imgdata then extracts them.
 	char BMP_HEADER1[] = "BM";
 	char BMP_HEADER2[] = { 0x00, 0x00, 0x00, 0x00, 0x36, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00 };
 	char BMP_HEADER3[28] = { 0x01, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -29,14 +17,14 @@ void random_bmp(){
 	unsigned int i = 0, j = 0, k = 0, l = 0, m = 0, width = 0, height = 0;
 	srand(time(NULL));
 	for (i = 0; i < 12; i++){
-#ifdef OS_Windows
+#if defined(_WIN32) || defined(WIN32)
 		strcpy(file_path, ".\\images\\");
 #else
 		strcpy(file_path, "./images/");
 #endif
 		strcat(file_path, names[i]);
 		strcat(file_path, ".bmp");
-		O = fopen(file_path, "wb");
+		O = fopen(file_path, "wb");		
 		if (O == NULL){
 			printf("DEBUG ERROR\nNo images folder\n");
 			return;
@@ -86,32 +74,33 @@ void random_bmp(){
 }
 
 int main(int argc, char **argv){
-	unsigned int i = 0, j = 0;
+	unsigned int i = 0, j = 0;	// Just for debuging
 	int error = 0;
 
 	if (argc == 1){
-		printf("\n%s extract <imgdata file>\n%s build-imgdata\n", argv[0], argv[0]);
+		printf("\n%s extract <imgdata file> <output folder>\n%s build <input folder> <output folder>\n", argv[0], argv[0]);
 		return 0;
 	}
 
-	if (argc > 3){
-		printf("\n%s extract <imgdata file>\n%s build-imgdata\n", argv[0], argv[0]);
-		if (((strcmp(argv[1], "extract") == 0) || (strcmp(argv[1], "build-imgdata") == 0)) == 0){
+	if (argc > 4){
+		printf("\n%s extract <imgdata file> <output folder>\n%s build <input folder> <output folder>\n", argv[0], argv[0]);
+		if (((strcmp(argv[1], "extract") == 0) || (strcmp(argv[1], "build") == 0)) == 0){
 			printf("\nInvalid argument: %s\n", argv[1]);
 		}
 		printf("\nToo much arguments\n");
 		return 0;
 	}
-	if ((strcmp(argv[1], "debug") == 0) && argc == 3){
+
+    if ((strcmp(argv[1], "debug") == 0) && argc == 3){	// Just for debuging
 		j = atoi(argv[2]);
 		for (i =0; i < j; i++){
 			printf("\n                    ----------------------------------------\n                                       %u\n                    ----------------------------------------\n\n", i+1);
 			random_bmp();
-			if (build_imgdata() == -1){
+			if (build("images",".\\") == -1){
 				printf("BUILD ERROR");
 				break;
 			}
-			if (extract("new-imgdata.img") == -1){
+			if (extract("new-imgdata.img","images") == -1){
 				printf("EXTRACT ERROR");
 				break;
 			}
@@ -119,30 +108,36 @@ int main(int argc, char **argv){
 		return 0;
 	}
 
-	if (((strcmp(argv[1], "extract") == 0) || (strcmp(argv[1], "build-imgdata") == 0)) == 0){
-		printf("\n%s extract <imgdata file>\n%s build-imgdata\n\nInvalid argument: %s \n", argv[0], argv[0], argv[1]);
+	if (((strcmp(argv[1], "extract") == 0) || (strcmp(argv[1], "build") == 0)) == 0){
+		printf("\n%s extract <imgdata file> <output folder>\n%s build <input folder> <output folder>\n\nInvalid argument: %s \n", argv[0], argv[0], argv[1]);
 		return 0;
 	}
-	if ((strcmp(argv[1], "extract") == 0) && argc == 3){
-		error=extract(argv[2]);
+	if ((strcmp(argv[1], "extract") == 0) && argc == 4){
+		error = extract(argv[2], argv[3]);
 		if (error != 0){
 			return error;
 		}
 	}
 	else{
-		if (!(strcmp(argv[1], "build-imgdata") == 0)){
-			printf("\n%s extract <imgdata file>\n%s build-imgdata\n\nToo few arguments\n", argv[0], argv[0]);
+		if ((strcmp(argv[1], "extract") == 0) && argc < 4){
+			printf("\n%s extract <imgdata file> <output folder>\n%s build <input folder> <output folder>\n\nToo few arguments\n", argv[0], argv[0]);
+		}
+		if ((strcmp(argv[1], "extract") == 0) && argc > 4){
+			printf("\n%s extract <imgdata file> <output folder>\n%s build <input folder> <output folder>\n\nToo much arguments\n", argv[0], argv[0]);
 		}
 	}
-	if ((strcmp(argv[1], "build-imgdata") == 0) && argc == 2){
-		error=build_imgdata();
+	if ((strcmp(argv[1], "build") == 0) && argc == 4){
+		error=build(argv[2], argv[3]);
 		if (error != 0){
 			return error;
 		}
 	}
 	else{
-		if (!(strcmp(argv[1], "extract") == 0)){
-			printf("\n%s extract <imgdata file>\n%s build-imgdata\n\nToo much arguments\n", argv[0], argv[0]);
+        if ((strcmp(argv[1], "build") == 0) && argc < 4){
+			printf("\n%s extract <imgdata file> <output folder>\n%s build <input folder> <output folder>\n\nToo few arguments\n", argv[0], argv[0]);
+		}
+		if ((strcmp(argv[1], "build") == 0) && argc > 4){
+			printf("\n%s extract <imgdata file> <output folder>\n%s build <input folder> <output folder>\n\nToo much arguments\n", argv[0], argv[0]);
 		}
 	}
 	return 0;

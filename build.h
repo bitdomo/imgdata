@@ -12,6 +12,7 @@ typedef struct raw_images{
 typedef struct BMP_PIXEL{
 	char *data;
 }BMP_PIXEL;
-int build_imgdata();
+
+int build(char *in, char *out);
 
 #endif // BUILD_H_INCLUDED

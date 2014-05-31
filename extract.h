@@ -11,6 +11,6 @@ typedef struct raw_image_header{
 	unsigned int size;
 }raw_image_header;
 
-int extract(char *input);
+int extract(char *in, char *out);
 
 #endif // EXTRACT_H_INCLUDED

@@ -1,99 +1,118 @@
-#ifdef __unix__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "extract.h"
 #include "build.h"
 
-#elif defined(_WIN32) || defined(WIN32)
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "extract.h"
-#include "build.h"
-
-#define OS_Windows
-#endif
-int build_imgdata(){
-	char c = 0, R = 0, G = 0, B = 0;
+int build(char *in, char *out){
+	char c = 0;
+	char R = 0, G = 0, B = 0;
 	char x_pos[5] = { 0 };
 	char y_pos[5] = { 0 };
-	char *names[] = { "boot", "charger", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode" };
-	char IMGDATA_HEADER[] = { 'I', 'M', 'G', 'D', 'A', 'T', 'A', '!', 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	char *names[] = { "boot", "charger", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode" };	// For checking pos.txt
+	char IMGDATA_HEADER[] = { 'I', 'M', 'G', 'D', 'A', 'T', 'A', '!', 0x01, 0x00, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };	// Header of imgdata.img
 	char file_path[256] = { 0 };
-	BMP_PIXEL pixels[12] = { NULL };
+	char input[256] = { 0 };	// I had to add these since on linux, it is not possible to change string in char*
+	char output[256] = { 0 };	// http://c-faq.com/decl/strlitinit.html
 	unsigned int i = 0, j = 0, k = 0;
-	unsigned int extra = 0;
-	unsigned int for_check = 0;
-	raw_image_header RAW_IMAGE_HEADERS[12] = { 0 };
-	raw_images *RAW_IMAGES[12] = {NULL};
-	raw_images *cur = NULL;
+	unsigned int extra = 0;		// Stands for the extra bytes to make the size of BMP lines multiple of 4 in bytes 
+	unsigned int for_check = 0;	// Helps to deremine whether the BMP file is correct or not.
+	BMP_PIXEL pixels[12] = {{ NULL }};	// Stores the pixels of a BMP file without the extra bytes.
+	raw_image_header RAW_IMAGE_HEADERS[12] = {{{ 0 }}}; // Stores the header infos for the images in the imgdata.img
+	raw_images *RAW_IMAGES[12] = { NULL };	// Stores the pixels in RLE format for each picture.
+	raw_images *cur = NULL;	// Stores the actual data of the *RAW_IMAGES[12] list.
 	FILE *I = NULL;
 	FILE *O = NULL;
-		
-	/*for (i = 0; i < 12; i++){
-		RAW_IMAGES[i] = (raw_images*)malloc(sizeof(raw_images));
-		RAW_IMAGES[i]->B = 0;
-		RAW_IMAGES[i]->G = 0;
-		RAW_IMAGES[i]->R = 0;
-		RAW_IMAGES[i]->count = 0;
-		RAW_IMAGES[i]->next = NULL;
-	}
-		*/
-	printf("Reading pos.txt...");
-#ifdef OS_Windows
-	I = fopen(".\\images\\pos.txt", "rb");
-	if (I == NULL){
-		printf("FAIL!\nCould not open .\\images\\pos.txt\n");
-		return -1;
-	}
+
+	strcpy(input, in);
+	strcpy(output, out);
+/////Changes backslah to slash on Linux. Changes slash to backslash on Windows.
+#if defined(_WIN32) || defined(WIN32)
+    if (strchr(input, '/') != NULL){
+        i = 0;
+        while (input[i] != 0) {
+            if (input[i] == '/'){
+                input[i] = '\\';
+            }
+            i++;
+        }
+    }
 #else
-	I = fopen("./images/pos.txt", "rb");
+    if (strchr(input, '\\') != NULL){
+        i = 0;
+        while (input[i] != 0) {
+            if (input[i] == '\\'){
+                input[i] = '/';
+            }
+            i++;
+        }
+    }
+#endif
+#if defined(_WIN32) || defined(WIN32)
+    if (strchr(output, '/') != NULL){
+        i = 0;
+        while (output[i] != 0) {
+            if (output[i] == '/'){
+                output[i] = '\\';
+            }
+            i++;
+        }
+    }
+#else
+    if (strchr(output, '\\') != NULL){
+        i = 0;
+        while (output[i] != 0) {
+            if (output[i] == '\\'){
+                output[i] = '/';
+            }
+            i++;
+        }
+    }
+#endif
+    strcpy(file_path,input);
+#if defined(_WIN32) || defined(WIN32)
+    if (file_path[strlen(file_path)] != '\\'){
+        strcat(file_path, "\\");
+    }
+#else
+    if (file_path[strlen(file_path)] != '/'){
+        strcat(file_path, "/");
+    }
+#endif
+    strcat(file_path, "pos.txt");
+	printf("Reading pos.txt...");
+	I = fopen(file_path, "rb");
 	if (I == NULL){
-		printf("FAIL!\nCould not open ./images/pos.txt\n");
+		printf("FAIL!\nCould not open %s\n", file_path);
 		return -1;
 	}
-#endif
-	for (i = 0; i < 12; i++){
+	for (i = 0; i < 12; i++){	// Reads pos.txt and does checks for it.
 		c = fgetc(I);
-		while (c != 0x20){
+		while (c != 0x20){	// Reads the name of the images from pos.txt to the actual RAW_IMAGE_HEADERS[i].name until it reaches space
 			RAW_IMAGE_HEADERS[i].name[j] = c;
 			j++;
 			c = fgetc(I);
-			if (j>15){
+			if (j > 15){	// In imgdata.img the the name of the images can't be longer than 15 characters.
 				RAW_IMAGE_HEADERS[i].name[15] = '\0';
-#ifdef OS_Windows
-				printf("FAIL!\nUnknown name \"%s\" at line %u in .\\images\\pos.txt\n", RAW_IMAGE_HEADERS[i].name, i + 1);
-#else
-				printf("FAIL!\nUnknown name \"%s\" at line %u in ./images/pos.txt\n", RAW_IMAGE_HEADERS[i].name, i + 1);
-#endif
+				printf("FAIL!\nUnknown name \"%s\" at line %u in %s\n", RAW_IMAGE_HEADERS[i].name, i + 1, file_path);
 				fclose(I);
 				return -1;
 			}
 		}
 		RAW_IMAGE_HEADERS[i].name[j] = '\0';
-		if (!(strcmp(names[i], RAW_IMAGE_HEADERS[i].name) == 0)){
-#ifdef OS_Windows
-			printf("FAIL!\nUnknown name \"%s\" at line %u in .\\images\\pos.txt", RAW_IMAGE_HEADERS[i].name, i + 1);
-#else
-			printf("FAIL!\nUnknown name \"%s\" at line %u in ./images/pos.txt", RAW_IMAGE_HEADERS[i].name, i + 1);
-#endif
+		if (!(strcmp(names[i], RAW_IMAGE_HEADERS[i].name) == 0)){ // If the name is wrong the building fails.
+			printf("FAIL!\nUnknown name \"%s\" at line %u in %s\n", RAW_IMAGE_HEADERS[i].name, i + 1, file_path);
 			fclose(I);
 			return -1;
 		}
 		j = 0;
-		k = 0;
 		c = fgetc(I);
-		while (c != 'x'){
+		while (c != 'x'){	// Reads X position until it reaches the x character
 			x_pos[j] = c;
 			j++;
 			c = fgetc(I);
-			if (j > 4){
-#ifdef OS_Windows
-				printf("FAIL!\nCheck \"%s\" in .\\images\\pos.txt\nX position must be maximum 4 digits long\nCheck for the \"x\" too", RAW_IMAGE_HEADERS[i].name);
-#else
-				printf("FAIL!\nCheck \"%s\" in ./images/pos.txt\nX position must be maximum 4 digits long\nCheck for the \"x\" too", RAW_IMAGE_HEADERS[i].name);
-#endif
+			if (j > 4){	// If still not reached the x character then it fails.
+				printf("FAIL!\nCheck \"%s\" in %s\nX position must be maximum 4 digits long\nCheck for the \"x\" too", RAW_IMAGE_HEADERS[i].name, file_path);
 				fclose(I);
 				return -1;
 			}
@@ -106,18 +125,13 @@ int build_imgdata(){
 			return -1;
 		}
 		j = 0;
-		k = 0;
 		c = fgetc(I);
-		while (c != 0x0D && c != 0x0A && c != -1){
+		while (c != 0x0D && c != 0x0A && c != -1){	// Reads Y positin until it finds CR, LF or EOF.
 			y_pos[j] = c;
 			j++;
 			c = fgetc(I);
 			if (j > 4){
-#ifdef OS_Windows
-				printf("FAIL!\nCheck \"%s\" .\\images\\pos.txt\nY position must be maximum 4 digits long\nCheck for new line too", RAW_IMAGE_HEADERS[i].name);
-#else
-				printf("FAIL!\nCheck \"%s\" ./images/pos.txt\nY position must be maximum 4 digits long\nCheck for new line too", RAW_IMAGE_HEADERS[i].name);
-#endif
+				printf("FAIL!\nCheck \"%s\" .%s\nY position must be maximum 4 digits long\nCheck for new line too", RAW_IMAGE_HEADERS[i].name, file_path);
 				fclose(I);
 				return -1;
 			}
@@ -130,17 +144,22 @@ int build_imgdata(){
 			return -1;
 		}
 		j = 0;
-		if (c == 0x0D){
+		if (c == 0x0D){	// If finds CR then skip LF to get to the new line.
 			fgetc(I);
 		}
 	}
 	printf("Done\n");
 	fclose(I);
-	for (i = 0; i < 12; i++){
-#ifdef OS_Windows
-		strcpy(file_path, ".\\images\\");
+	for (i = 0; i < 12; i++){	// Reads the the BMP files from the given path and stores them in the memory without the extra bytes
+		strcpy(file_path, input);
+#if defined(_WIN32) || defined(WIN32)
+        if (file_path[strlen(file_path)] != '\\'){
+            strcat(file_path, "\\");
+        }
 #else
-		strcpy(file_path, "./images/");
+        if (file_path[strlen(file_path)] != '/'){
+            strcat(file_path, "/");
+        }
 #endif
 		strcat(file_path, RAW_IMAGE_HEADERS[i].name);
 		strcat(file_path, ".bmp");
@@ -149,8 +168,8 @@ int build_imgdata(){
 			printf("\nCould not open %s\n", file_path);
 			return -1;
 		}
-
-		printf("\nChecking %s...", file_path);
+//////////////////// Checks the BMP file //////////////////////
+		printf("\nChecking %s.bmp...", RAW_IMAGE_HEADERS[i].name);
 		if ((c = fgetc(I)) == 'B'){
 			if ((c = fgetc(I)) != 'M'){
 				printf("FAIL!\n%s is not a Windows BMP file\n", file_path);
@@ -213,19 +232,20 @@ int build_imgdata(){
 			return -1;
 		}
 		printf("OK!");
-		printf("\nReading %s...", file_path);
-		fseek(I, 0x36, SEEK_SET);
-		if (4 - ((RAW_IMAGE_HEADERS[i].width * 3) % 4) == 4){
+//////////////////////////////////////////////////////////////////
+		printf("\nReading %s...", RAW_IMAGE_HEADERS[i].name);
+		fseek(I, 0x36, SEEK_SET);	// Sets the position to the pixel table
+		if (4 - ((RAW_IMAGE_HEADERS[i].width * 3) % 4) == 4){	// Calculates the extra bytes
 			extra = 0;
 		}
 		else{
 			extra = 4 - ((RAW_IMAGE_HEADERS[i].width * 3) % 4);
 		}
-		pixels[i].data = (char*)malloc(sizeof(char)*(3 * RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height));
-		for (j = 0; j < (3*RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height); j++){
+		pixels[i].data = (char*)malloc(sizeof(char)*(3 * RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height));	// Allocate memory for the BMP pixels
+		for (j = 0; j < (3*RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height); j++){	// Reads the pixel datas from BMP file
 			pixels[i].data[j] = fgetc(I);
 			k++;
-			if (k == 3 * RAW_IMAGE_HEADERS[i].width){
+			if (k == 3 * RAW_IMAGE_HEADERS[i].width){	// If reaches the end of the pixel line then skips the amount of extra bytes 
 				fseek(I, extra, SEEK_CUR);
 				k = 0;
 			}
@@ -233,28 +253,23 @@ int build_imgdata(){
 		fclose(I);
 		printf("Done\n");
 	}
-	for (i = 0; i < 12; i++){
-
-#ifdef OS_Windows
-		printf("\nConverting .\\images\\%s.bmp...", RAW_IMAGE_HEADERS[i].name);
-#else
-		printf("\nConverting ./images/%s.bmp...", RAW_IMAGE_HEADERS[i].name);
-#endif
-		
+	for (i = 0; i < 12; i++){	// Converts the BMP pixels to RLE format. Fills the IMAGE_HEADERS with infos
+		printf("\nConverting %s.bmp...", RAW_IMAGE_HEADERS[i].name);
 		if (i == 0){
-			RAW_IMAGE_HEADERS[i].offset = 0x400;
+			RAW_IMAGE_HEADERS[i].offset = 0x400;	// The offset of the first image is 0x400 in imgdata.img
 		}
 		else{
-			if (RAW_IMAGE_HEADERS[i-1].size % 512 == 0){
-				RAW_IMAGE_HEADERS[i].offset = RAW_IMAGE_HEADERS[i - 1].offset + RAW_IMAGE_HEADERS[i - 1].size;
+			if (RAW_IMAGE_HEADERS[i-1].size % 512 == 0){	// Calculates the offset for the current image from the previous image size with block size.
+				RAW_IMAGE_HEADERS[i].offset = RAW_IMAGE_HEADERS[i - 1].offset + RAW_IMAGE_HEADERS[i - 1].size; // If the previous image file size is multiple of the block size
 			}
-			else{
+			else{	// If the previous image file size is not multiple of the block size
 				RAW_IMAGE_HEADERS[i].offset = RAW_IMAGE_HEADERS[i - 1].offset + RAW_IMAGE_HEADERS[i - 1].size + (512 - RAW_IMAGE_HEADERS[i-1].size % 512);
 			}
 		}
 		RAW_IMAGE_HEADERS[i].size = 0;
 		cur = RAW_IMAGES[i];
-		for (j = 3 * RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height - 3 * RAW_IMAGE_HEADERS[i].width; j != 0; j = j - 3 * RAW_IMAGE_HEADERS[i].width){
+		// Codes the BMP pixels to the RLE format of the imgdata.img More info http://forum.xda-developers.com/showpost.php?p=52955278&postcount=3
+		for (j = 3 * RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height - 3 * RAW_IMAGE_HEADERS[i].width; j != 0; j = j - 3 * RAW_IMAGE_HEADERS[i].width){	// Codes the BMP pixels to the RLE format of the imgdata.img More info http://forum.xda-developers.com/showpost.php?p=52955278&postcount=3
 			k = 0;
 			while (k != 3 * RAW_IMAGE_HEADERS[i].width){
 				if (k != 3 * RAW_IMAGE_HEADERS[i].width){
@@ -336,18 +351,29 @@ int build_imgdata(){
 		}
 		printf("Done\n");
 	}
-	O = fopen("new-imgdata.img", "wb");
+    strcpy(file_path, output);
+#if defined(_WIN32) || defined(WIN32)
+    if (file_path[strlen(file_path)] != '\\'){
+        strcat(file_path, "\\");
+    }
+#else
+    if (file_path[strlen(file_path)] != '/'){
+        strcat(file_path, "/");
+    }
+#endif
+    strcat(file_path, "new-imgdata.img");
+	O = fopen(file_path, "wb");
 	if (O == NULL){
-		printf("\nCould not create new-imgdata.img\n");
+		printf("\nCould not create %s\n", file_path);
 		return -1;
 	}
 	printf("\nWriting new-imgdata.img...");
-	fwrite(&IMGDATA_HEADER, sizeof(char), sizeof(IMGDATA_HEADER), O);
-	fwrite(RAW_IMAGE_HEADERS, sizeof(raw_image_header)* 12, 1, O);
-	for (i = 0; i < 520; i++){
+	fwrite(&IMGDATA_HEADER, sizeof(char), sizeof(IMGDATA_HEADER), O);	// Writes the header of the new imgdata.img file
+	fwrite(RAW_IMAGE_HEADERS, sizeof(raw_image_header)* 12, 1, O);	// Writes the image headers to imgdata
+	for (i = 0; i < 520; i++){	// Writes out 520 of 0x00 to get to the 0x400 offset
 		fputc(0x00, O);
 	}
-	for (i = 0; i < 12; i++){
+	for (i = 0; i < 12; i++){	//	Writes out the images coded in RLE
 		cur = RAW_IMAGES[i];
 		while (cur != NULL){
 			fputc(cur->count, O);
@@ -356,13 +382,14 @@ int build_imgdata(){
 			fputc(cur->B, O);
 			cur = cur->next;
 		}
-		if (RAW_IMAGE_HEADERS[i].size % 512 != 0){
+		if (RAW_IMAGE_HEADERS[i].size % 512 != 0){	// If the size is not multiple of the block size then writes out a certaion amount of 0x00 to fill a block.
 			for (j = 0; j < (512 - RAW_IMAGE_HEADERS[i].size % 512); j++){
 				fputc(0x00, O);
 			}
 		}
 	}
 	fclose(O);
+
 	printf("Done\n");
 	for (i = 0; i < 12; i++){;
 		while (RAW_IMAGES[i] != NULL){
@@ -373,31 +400,19 @@ int build_imgdata(){
 		free(pixels[i].data);
 	}
 
-	/*cur = RAW_IMAGES[7];
-	O = fopen(RAW_IMAGE_HEADERS[7].name, "wb");
-	while (cur != NULL){
-		fputc(cur->count, O);
-		fputc(cur->R, O);
-		fputc(cur->G, O);
-		fputc(cur->B, O);
-		cur = cur->next;
+    printf("\nChecking new-imgdata.img size...");
+	O = fopen(file_path, "rb");
+	if (O == NULL){
+		printf("FAIL!\nCant open %s", file_path);
+		return -1;
+	}
+	fseek(O, 0L, SEEK_END);
+	if (ftell(O) > 3145728){	// Check the file size of the new imgadata.img. It can't be bigger than 3MB.
+		printf("FAIL!\n%s is too big. Maximum size is 3145728 bytes", file_path);
+		fclose(O);
+		return -1;
 	}
 	fclose(O);
-	*/
-
-
-
-
-
-
-
-
-	/*for (i = 0; i < 12; i++){
-		O = fopen(RAW_IMAGE_HEADERS[i].name, "wb");
-		for (j = 0; j < 3 * RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height; j++){
-			fputc(pixels[i].data[j], O);
-		}
-		fclose(O);
-	}*/
+	printf("OK!\n");
 	return 0;
 }
