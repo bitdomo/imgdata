@@ -15,7 +15,7 @@ int build(char *in, char *out){
 	char input[256] = { 0 };	// I had to add these since on linux, it is not possible to change string in char*
 	char output[256] = { 0 };	// http://c-faq.com/decl/strlitinit.html
 	unsigned int i = 0, j = 0, k = 0;
-	unsigned int extra = 0;		// Stands for the extra bytes to make the size of BMP lines multiple of 4 in bytes 
+	unsigned int extra = 0;		// Stands for the extra bytes to make the size of BMP lines multiple of 4 in bytes
 	unsigned int for_check = 0;	// Helps to deremine whether the BMP file is correct or not.
 	BMP_PIXEL pixels[12] = {{ NULL }};	// Stores the pixels of a BMP file without the extra bytes.
 	raw_image_header RAW_IMAGE_HEADERS[12] = {{{ 0 }}}; // Stores the header infos for the images in the imgdata.img
@@ -189,6 +189,13 @@ int build(char *in, char *out){
 			fclose(I);
 			return -1;
 		}
+		fseek(I, 0x0E, SEEK_SET);
+		c = fgetc(I);
+		if (c == 0x0C){
+            printf("FAIL!\nBITMAPCOREHEADER structure is not supported\nRe-save the editet pictures with Paint, Gimp or Photoshop");
+            fclose(I);
+            return -1;
+		}
 		fseek(I, 0x1C, SEEK_SET);
 		if ((c = fgetc(I)) != 0x18){
 			printf("FAIL!\n%s is not a 24 bit Windows BMP file\n", file_path);
@@ -234,7 +241,9 @@ int build(char *in, char *out){
 		printf("OK!");
 //////////////////////////////////////////////////////////////////
 		printf("\nReading %s...", RAW_IMAGE_HEADERS[i].name);
-		fseek(I, 0x36, SEEK_SET);	// Sets the position to the pixel table
+		fseek(I,0x0A, SEEK_SET); //| Seeks to the byte which tells the start of the pixel table.
+		c = fgetc(I);            //| Reads that byte
+		fseek(I, c, SEEK_SET);	 //| Seeks the position to the pixel table
 		if (4 - ((RAW_IMAGE_HEADERS[i].width * 3) % 4) == 4){	// Calculates the extra bytes
 			extra = 0;
 		}
@@ -245,7 +254,7 @@ int build(char *in, char *out){
 		for (j = 0; j < (3*RAW_IMAGE_HEADERS[i].width*RAW_IMAGE_HEADERS[i].height); j++){	// Reads the pixel datas from BMP file
 			pixels[i].data[j] = fgetc(I);
 			k++;
-			if (k == 3 * RAW_IMAGE_HEADERS[i].width){	// If reaches the end of the pixel line then skips the amount of extra bytes 
+			if (k == 3 * RAW_IMAGE_HEADERS[i].width){	// If reaches the end of the pixel line then skips the amount of extra bytes
 				fseek(I, extra, SEEK_CUR);
 				k = 0;
 			}
