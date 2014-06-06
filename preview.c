@@ -93,6 +93,27 @@ int write_image(char *in, char* out, char *option, raw_image_header RAW_IMAGE_HE
         }
     }
 #endif
+#if defined(_WIN32) || defined(WIN32)
+    if (strchr(output, '/') != NULL){
+        i = 0;
+        while (output[i] != 0) {
+            if (output[i] == '/'){
+                output[i] = '\\';
+            }
+            i++;
+        }
+    }
+#else
+    if (strchr(output, '\\') != NULL){
+        i = 0;
+        while (output[i] != 0) {
+            if (output[i] == '\\'){
+                output[i] = '/';
+            }
+            i++;
+        }
+    }
+#endif
     strcpy(file_path, output);
 #if defined(_WIN32) || defined(WIN32)
     if (file_path[strlen(file_path)] != '\\'){
@@ -114,17 +135,6 @@ int write_image(char *in, char* out, char *option, raw_image_header RAW_IMAGE_HE
 	background = (char*)malloc(sizeof(char)* 1080 * 1920 * 3);
 	fread(background, sizeof(char)* 1080 * 1920 * 3, 1, O);
 	fseek(O, 0x36, SEEK_SET);
-    strcpy(file_path,input);
-#if defined(_WIN32) || defined(WIN32)
-    if (file_path[strlen(file_path)] != '\\'){
-        strcat(file_path, "\\");
-    }
-#else
-    if (file_path[strlen(file_path)] != '/'){
-        strcat(file_path, "/");
-    }
-#endif
-
     strcpy(file_path, input);
 #if defined(_WIN32) || defined(WIN32)
     if (file_path[strlen(file_path)] != '\\'){
