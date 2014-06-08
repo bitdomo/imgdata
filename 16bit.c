@@ -3,13 +3,15 @@
 #include <string.h>
 
 int _16bit(char *in){
+    unsigned char c = 0;
     unsigned char start = 0;
     char input[256] = { 0 };
     char path[256] = { 0 };
     char file_name[256] = { 0 };
     unsigned char *image = NULL;
-    unsigned int width = 0;
+    unsigned int width = 0, height = 0;
     unsigned int size = 0, extra = 0;
+    unsigned int for_check = 0;
     unsigned int i = 0, j = 0;
     FILE *I = NULL;
     FILE *O = NULL;
@@ -42,11 +44,65 @@ int _16bit(char *in){
         fclose(O);
         return -1;
     }
+    printf("\nChecking %s...", input);
+    if ((c = fgetc(I)) == 'B'){
+        if ((c = fgetc(I)) != 'M'){
+            printf("FAIL!\n%s is not a Windows BMP file\n", input);
+            fclose(I);
+            return -1;
+        }
+    }
+    else{
+        printf("FAIL!\n%s is not a Windows BMP file\n", input);
+        fclose(I);
+        return -1;
+    }
+    fread(&for_check, sizeof(unsigned int), 1, I);
+    fseek(I, 0L, SEEK_END);
+    if (ftell(I) != for_check){
+        printf("FAIL!\n%s is a damaged Windows BMP file\nFile size mismatch: %lu bytes, expected %u bytes\n", input, ftell(I),for_check);
+        fclose(I);
+        return -1;
+    }
+    fseek(I, 0x0E, SEEK_SET);
+    c = fgetc(I);
+    if (c == 0x0C){
+        printf("FAIL!\nBITMAPCOREHEADER structure is not supported\nRe-save the editet pictures with Paint, Gimp or Photoshop");
+        fclose(I);
+        return -1;
+    }
+    fseek(I, 0x1C, SEEK_SET);
+    if ((c = fgetc(I)) != 0x18){
+        printf("FAIL!\n%s is not a 24 bit Windows BMP file\n", input);
+        fclose(I);
+        return -1;
+    }
+    fseek(I, 0x1E, SEEK_SET);
+    fread(&for_check, sizeof(unsigned int), 1, I);
+    if (for_check != 0){
+        printf("FAIL!\n%s is a compressed Windows BMP file\nCompressed Windows BMP files are not supported\n", input);
+        fclose(I);
+        return -1;
+    }
+    fseek(I, 0x12, SEEK_SET);
+    fread(&width, sizeof(unsigned int), 1, I);
+    fread(&height, sizeof(unsigned int), 1, I);
+    if ((width == 0) || (width > 1080)){
+        printf("FAIL!\n%s is too wide\nImage width is %u pixels\nMaximum witdth is 1080 pixels\n", input, width);
+        fclose(I);
+        return -1;
+    }
+    if ((height == 0) || (height > 1920)){
+        printf("FAIL!\n%s is too high\nImage height is %u pixels\nMaximum height is 1920 pixels\n", input, height);
+        fclose(I);
+        return -1;
+    }
     fseek(I, 0x06, SEEK_SET);
     if (fgetc(I) == 0x01){
         printf("FAIL!\n%s image is already reduced to 16 bit", input);
         return -1;
     }
+    printf("OK!");
     fseek(I, 0L, SEEK_END);
     size = ftell(I);
     fseek(I,0x0A, SEEK_SET); //| Seeks to the byte which tells the start of the pixel table.
