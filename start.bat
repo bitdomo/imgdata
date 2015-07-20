@@ -5,7 +5,7 @@ set PATH=%PATH%;C:\Windows\System32;C:\Windows\SysWOW64
 set cecho=.\tools\cecho
 set choice=Choice.exe
 
-Title Imgdata tool v1.3.0
+Title Imgdata tool v1.4.0
 
 ver | findstr /i "5\.0\." > nul
 IF %ERRORLEVEL% EQU 0  set choice=.\tools\Choice4XP.exe
@@ -52,12 +52,16 @@ echo.  6 - View fastboot screen with Power Off
 echo.  7 - View oem unlock screen with no
 echo.  8 - View oem unlock screen with yes
 echo.  9 - View download mode screen
-echo.  A - View ALL
+echo.  A - View oem laf screen with yes
+echo.  B - View oem laf screen with no
+echo.  C - View all
 echo.
 %cecho% {aqua}Type an action number, or X to exit{#}
-%choice% /c 0123456789AX /n /m ""
-if errorlevel 12 goto :menu
-if errorlevel 11 goto :all
+%choice% /c 0123456789ABCX /n /m ""
+if errorlevel 14 goto :menu
+if errorlevel 13 goto :all
+if errorlevel 12 goto :oem-laf-no
+if errorlevel 11 goto :oem-laf-yes
 if errorlevel 10 goto :downloadmode
 if errorlevel 9 goto :oem-unlock-yes
 if errorlevel 8 goto :oem-unlock-no
@@ -88,6 +92,46 @@ if errorlevel 1 goto :all
 %choice% /c YN /n /m ""
 if errorlevel 2 goto :menu
 if errorlevel 1 goto :all
+
+:oem-laf-no
+cls
+set option=oem-laf-no
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :oem-laf-noerr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-laf-no
+
+:oem-laf-noerr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-laf-no
+
+:oem-laf-yes
+cls
+set option=oem-laf-yes
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :oem-laf-yeserr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-laf-yes
+
+:oem-laf-yeserr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-laf-yes
 
 :downloadmode
 cls

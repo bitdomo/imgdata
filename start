@@ -115,7 +115,9 @@ preview_menu(){
 		printf " 7 - View oem unlock screen with no\n"
 		printf " 8 - View oem unlock screen with yes\n"
 		printf " 9 - View download mode screen\n"
-		printf " A - View ALL\n"
+		printf " A - View oem laf screen with yes\n"
+		printf " B - View oem laf screen with no\n"
+		printf " C - View ALL\n"
 		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
 		read choice
 		case $choice in
@@ -170,11 +172,31 @@ preview_menu(){
 				break
 				;;
 			"a")
-				choice="all"
+				choice="oem-laf-yes"
 				preview_f
 				break
 				;;
 			"A")
+				choice="oem-laf-yes"
+				preview_f
+				break
+				;;
+			"b")
+				choice="oem-laf-no"
+				preview_f
+				break
+				;;
+			"B")
+				choice="oem-laf-no"
+				preview_f
+				break
+				;;
+			"c")
+				choice="all"
+				preview_f
+				break
+				;;
+			"C")
 				choice="all"
 				preview_f
 				break
@@ -493,7 +515,7 @@ build_f(){
 	done
 }
 
-printf "\e]2;Imgdata tool v1.3.0\a"
+printf "\e]2;Imgdata tool v1.4.0\a"
 
 if [ "$(uname)" == "Darwin" ]; then
 	IMGDATA="imgdata-mac"
