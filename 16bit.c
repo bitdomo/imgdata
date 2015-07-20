@@ -104,7 +104,7 @@ int _16bit(char *in){
     }
     printf("OK!");
     fseek(I, 0L, SEEK_END);
-    size = ftell(I);
+    size = (unsigned int)ftell(I);
     fseek(I,0x0A, SEEK_SET); //| Seeks to the byte which tells the start of the pixel table.
     start = fgetc(I);        //| Reads that byte
     fseek(I, 0x12, SEEK_SET);
@@ -119,7 +119,7 @@ int _16bit(char *in){
     image = (unsigned char*)malloc(sizeof(unsigned char)*size);
     fread(image, sizeof(char)*size, 1, I);
     fclose(I);
-    i = strlen(input);
+    i = (unsigned int)strlen(input);
 #if defined(_WIN32) || defined(WIN32)
     while(input[i] != '\\'){
 #else

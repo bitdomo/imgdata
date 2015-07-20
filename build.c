@@ -113,7 +113,7 @@ int build(char *in, char *out){
 		}
 	}
 	j = 0;
-	RAW_IMAGES = (raw_images*)malloc(sizeof(raw_images)*entries);
+	RAW_IMAGES = (raw_images**)malloc(sizeof(raw_images)*entries);
 	for (i = 0; i < entries; i++){
 		RAW_IMAGES[i] = NULL;
 	}
