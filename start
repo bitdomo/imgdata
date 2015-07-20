@@ -1,0 +1,551 @@
+#!/bin/bash
+
+extract_f(){
+	unset choice
+	while [ 1 ]
+	do
+		while [ -z "$input" ]
+		do
+			clear
+			printf "\e[1;36mDrag \'n Drop here the imgdata file or give its path and press [enter].\nPress x and [enter] to cancel: \e[37m"
+			read input
+			printf "\n"
+		done
+		if [ "$input" == "x" ] || [ "$input" == "X" ]; then
+			unset input
+			return
+		fi
+		temp="${input%\'}"
+		input="${temp#\'}"
+		"$WORKDIR"/tools/$IMGDATA extract "$input" "$WORKDIR"/images
+		errorlevel=$?
+		if [ $errorlevel == 0 ]; then
+			$OPEN "$WORKDIR"/images/ > /dev/null 2>&1
+			printf "\e[1;32m\n$input is extracted.\e[1;37m"
+			unset input
+			read
+			break
+		else
+			printf "\e[1;31m\nSomething went wrong. Check the lines above.\n"
+			printf "\e[37m\nTry again? (y/n): "
+			while [ 1 ]
+			do 
+				read ans
+				if [ -z "$ans" ]; then
+					printf "\e[37m\nTry again? (y/n): "				
+				else
+					if [ $ans == "n" ] || [ $ans == "N" ]; then	
+						unset input			
+						return
+					fi
+					if [ $ans == "y" ] || [ $ans == "Y" ]; then
+						break
+					fi
+				fi
+			done
+			unset input
+		fi
+	done
+	return
+}
+
+preview_f(){
+	while [ 1 ]
+	do
+		"$WORKDIR"/tools/$IMGDATA preview $choice "$WORKDIR"/images "$WORKDIR"/previews
+		errorlevel=$?
+		if [ $errorlevel == 0 ]; then
+			if [ $choice == "all" ]; then
+				$OPEN "$WORKDIR"/previews/ > /dev/null 2>&1
+			else
+				$OPEN "$WORKDIR"/previews/$choice.bmp > /dev/null 2>&1
+			fi			
+			printf "\e[37m\nAgain? (y/n): "
+			while [ 1 ]
+			do
+				read ans
+				if [ -z "$ans" ]; then
+					printf "\e[37m\nAgain? (y/n): "				
+				else
+					if [ $ans == "n" ] || [ $ans == "N" ]; then				
+						return
+					fi
+					if [ $ans == "y" ] || [ $ans == "Y" ]; then
+						break
+					fi
+				fi
+			done
+		else
+			printf "\e[1;31m\nSomething went wrong. Check the lines above.\n"
+			printf "\e[37m\nTry again? (y/n): "
+			while [ 1 ]
+			do
+				read ans
+				if [ -z "$ans" ]; then
+					printf "\e[37m\nTry again? (y/n): "				
+				else
+					if [ $ans == "n" ] || [ $ans == "N" ]; then				
+						return
+					fi
+					if [ $ans == "y" ] || [ $ans == "Y" ]; then
+						break
+					fi
+				fi
+			done
+		fi
+	done
+}
+
+preview_menu(){
+	while [ 1 ]
+	do
+		clear
+		printf "\e[1;37m============\n"
+		printf "\e[1;34;47mPreview menu\n\e[40m"
+		printf "\e[1;37m============\n\n"
+		printf "\e[1;35mSelect an action\n"
+		echo -e "\033[1;35m----------------"
+		printf "\e[37m 0 - View locked boot screen\n"
+		printf " 1 - View unlocked boot screen\n"
+		printf " 2 - View charger screen\n"
+		printf " 3 - View fastboot screen with Start\n"
+		printf " 4 - View fastboot screen with Restart Bootloader\n"
+		printf " 5 - View fastboot screeenwith Recovery mode\n"
+		printf " 6 - View fastboot screen with Power Off\n"
+		printf " 7 - View oem unlock screen with no\n"
+		printf " 8 - View oem unlock screen with yes\n"
+		printf " 9 - View download mode screen\n"
+		printf " A - View ALL\n"
+		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
+		read choice
+		case $choice in
+			"0")	
+				choice="locked-boot"
+				preview_f
+				break
+				;;
+			"1")
+				choice="unlocked-boot"
+				preview_f
+				break
+				;;
+			"2")
+				choice="charger"
+				preview_f
+				break
+				;;
+			"3")
+				choice="fastboot-start"
+				preview_f
+				break
+				;;
+			"4")
+				choice="fastboot-bootloader"
+				preview_f
+				break
+				;;
+			"5")
+				choice="fastboot-recovery"
+				preview_f
+				break
+				;;
+			"6")
+				choice="fastboot-poweroff"
+				preview_f
+				break
+				;;
+			"7")
+				choice="oem-unlock-no"
+				preview_f
+				break
+				;;
+			"8")
+				choice="oem-unlock-yes"
+				preview_f
+				break
+				;;
+			"9")
+				choice="downloadmode"
+				preview_f
+				break
+				;;
+			"a")
+				choice="all"
+				preview_f
+				break
+				;;
+			"A")
+				choice="all"
+				preview_f
+				break
+				;;
+			"x")
+				break
+				;;
+			"X")
+				break
+				;;
+			*)
+		esac
+	done
+	return
+}
+
+_16bit_f(){
+	clear
+	while [ 1 ]
+	do
+		"$WORKDIR"/tools/$IMGDATA 16bit $choice
+		errorlevel=$?
+		if [ $errorlevel != 0 ]; then
+			printf "\e[1;31m\nSomething went wrong. Check the lines above.\n"
+				printf "\e[37m\nTry again? (y/n): "
+				while [ 1 ]
+				do
+					read ans
+					if [ -z "$ans" ]; then
+						printf "\e[37m\nTry again? (y/n): "				
+					else
+						if [ $ans == "n" ] || [ $ans == "N" ]; then				
+							return
+						fi
+						if [ $ans == "y" ] || [ $ans == "Y" ]; then
+							break
+						fi
+					fi
+				done
+		else
+			return
+		fi
+	done
+}
+
+_16bit_menu(){
+	while [ 1 ]
+	do
+		clear
+		printf "\e[1;37m=================\n"
+		printf "\e[1;34;47m16 bit conversion\n\e[40m"
+		printf "\e[1;37m=================\n\n"
+		printf "\e[1;35mSelect an action\n"
+		echo -e "\033[1;35m----------------"
+		printf "\e[37m 0 - Convert boot.bmp\n"
+		printf " 1 - Convert charger.bmp\n"
+		printf " 2 - Convert unlocked.bmp\n"
+		printf " 3 - Convert start.bmp\n"
+		printf " 4 - Convert bootloader.bmp\n"
+		printf " 5 - Convert recovery.bmp\n"
+		printf " 6 - Convert poweroff.bmp\n"
+		printf " 7 - Convert fastboot_op.bmp\n"
+		printf " 8 - Convert oem_unlock.bmp\n"
+		printf " 9 - Convert unlock_yes.bmp\n"
+		printf " A - Convert unlock_no.bmp\n"
+		printf " B - Convert downloadmode.bmp\n"
+		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
+		read choice
+		case $choice in
+			"0")
+				choice="$WORKDIR/images/boot.bmp"
+				_16bit_f
+				break
+				;;
+			"1")
+				choice="$WORKDIR/images/charger.bmp"
+				_16bit_f
+				break
+				;;
+			"2")
+				choice="$WORKDIR/images/unlocked.bmp"
+				_16bit_f
+				break
+				;;
+			"3")
+				choice="$WORKDIR/images/start.bmp"
+				_16bit_f
+				break
+				;;
+			"4")
+				choice="$WORKDIR/images/bootloader.bmp"
+				_16bit_f
+				break
+				;;
+			"5")
+				choice="$WORKDIR/images/recovery.bmp"
+				_16bit_f
+				break
+				;;
+			"6")
+				choice="$WORKDIR/images/poweroff.bmp"
+				_16bit_f
+				break
+				;;
+			"7")
+				choice="$WORKDIR/images/fastboot_op.bmp"
+				_16bit_f
+				break
+				;;
+			"8")
+				choice="$WORKDIR/images/oem_unlock.bmp"
+				_16bit_f
+				break
+				;;
+			"9")
+				choice="$WORKDIR/images/unlock-yes.bmp"
+				_16bit_f
+				break
+				;;
+			"a")
+				choice="$WORKDIR/images/unlock-no.bmp"
+				_16bit_f
+				break
+				;;
+			"A")
+				choice="$WORKDIR/images/unlock-no.bmp"
+				_16bit_f
+				break
+				;;
+			"b")
+				choice="$WORKDIR/images/downloadmode.bmp"
+				_16bit_f
+				break
+				;;
+			"B")
+				choice="$WORKDIR/images/downloadmode.bmp"
+				_16bit_f
+				break
+				;;
+			"x")
+				break
+				;;
+			"X")
+				break
+				;;
+			*)
+		esac
+	done
+	return
+}
+
+flash_adb(){
+	while [ 1 ]
+	do
+		clear
+		printf "\e[37mRestart your phone to recovery, enable adb sideload then press enter."
+		read
+		"$WORKDIR"/tools/$ADB sideload "$WORKDIR"/flash-me.zip
+		errorlevel=$?
+		if [ $errorlevel != 0 ]; then
+			printf "\e[1;31m\nSomething went wrong. Check the lines above.\n"
+				printf "\e[37m\nTry again? (y/n): "
+				while [ 1 ]
+				do
+					read ans
+					if [ -z "$ans" ]; then
+						printf "\e[37m\nTry again? (y/n): "				
+					else
+						if [ $ans == "n" ] || [ $ans == "N" ]; then				
+							return
+						fi
+						if [ $ans == "y" ] || [ $ans == "Y" ]; then
+							break
+						fi
+					fi
+				done
+		else
+			printf "\e[1;32m\nFlash-me.zip sent to the device succesfuly.\e[1;37m"
+			read
+			return
+		fi
+	done
+}
+
+flash_fastboot(){
+		while [ 1 ]
+	do
+		clear
+		printf "\e[37mRestart your phone to fastboot mode then press enter."
+		read
+		"$WORKDIR"/tools/$FASTBOOT flash imgdata "$WORKDIR"/custom/new-imgdata.img
+		errorlevel=$?
+		if [ $errorlevel != 0 ]; then
+			printf "\e[1;31m\nSomething went wrong. Check the lines above.\n"
+				printf "\e[37m\nTry again? (y/n): "
+				while [ 1 ]
+				do
+					read ans
+					if [ -z "$ans" ]; then
+						printf "\e[37m\nTry again? (y/n): "				
+					else
+						if [ $ans == "n" ] || [ $ans == "N" ]; then				
+							return
+						fi
+						if [ $ans == "y" ] || [ $ans == "Y" ]; then
+							break
+						fi
+					fi
+				done
+		else
+			printf "\e[1;32m\nNew-imgdata.img flashed to the device succesfuly\e[1;37m"
+			read
+			return
+		fi
+	done
+}
+
+flash_menu(){
+	while [ 1 ]
+	do
+		clear
+		printf "\e[1;37m==========\n"
+		printf "\e[1;34;47mImgdata extractor and builder\n\e[40m"
+		printf "\e[1;37m==========\n\n"
+		printf "\e[1;35mSelect an action\n"
+		echo -e "\033[1;35m----------------"
+		printf "\e[37m 1 - Flash with adb sideload\n"
+		printf " 2 - Flash with fastboot\n"
+		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
+		read choice
+		case $choice in
+			"1")
+				flash_adb
+				return
+				;;
+			"2")
+				flash_fastboot
+				return
+				;;
+			"x")
+				break
+				;;
+			"X")
+				break
+				;;
+			*)
+		esac
+	done
+	return
+}
+
+build_f(){
+	while [ 1 ]
+	do
+		"$WORKDIR"/tools/$IMGDATA build "$WORKDIR"/images/ "$WORKDIR"/custom/
+		errorlevel=$?
+		if [ $errorlevel == 1 ]; then
+				printf "\e[1;31m\nSomething went wrong. The new imgdata is too big.\nResize the images or use the built in 16 bit conversion\n"
+				printf "\e[37m\nDo you want to start the 16 bit conversion? (y/n): "
+				while [ 1 ]
+				do
+					read ans
+					if [ -z "$ans" ]; then
+						printf "\e[37m\nTry again? (y/n): "				
+					else
+						if [ $ans == "n" ] || [ $ans == "N" ]; then				
+							return
+						fi
+						if [ $ans == "y" ] || [ $ans == "Y" ]; then
+							break
+						fi
+					fi
+				done
+		else
+			if [ $errorlevel != 0 ]; then
+				printf "\e[1;31m\nSomething went wrong. Check the lines above.\n"
+				printf "\e[37m\nTry again? (y/n): "
+				while [ 1 ]
+				do
+					read ans
+					if [ -z "$ans" ]; then
+						printf "\e[37m\nTry again? (y/n): "				
+					else
+						if [ $ans == "n" ] || [ $ans == "N" ]; then				
+							return
+						fi
+						if [ $ans == "y" ] || [ $ans == "Y" ]; then
+							break
+						fi
+					fi
+				done
+			else
+				printf "\n"
+				cp "$WORKDIR"/tools/dummy.zip "$WORKDIR"/flash-me.zip
+				printf "\n"
+				"$WORKDIR"/tools/$_7ZIP a "$WORKDIR"/flash-me.zip "$WORKDIR"/custom/new-imgdata.img
+				printf "\e[1;32m\nBuilding finished. Flash \e[1;37mflash-me.zip \e[1;32min the recovery.\n\e[37m"
+				printf "\e[37m\nDo you want to flash it? (y/n): "
+				while [ 1 ]
+				do
+					read ans
+					if [ -z "$ans" ]; then
+						printf "\e[37m\nDo you want to flash it? (y/n): "				
+					else
+						if [ $ans == "n" ] || [ $ans == "N" ]; then				
+							return
+						fi
+						if [ $ans == "y" ] || [ $ans == "Y" ]; then
+							flash_menu
+							return
+						fi
+					fi
+				done
+			fi
+		fi
+	done
+}
+
+printf "\e]2;Imgdata tool v1.3.0\a"
+
+if [ "$(uname)" == "Darwin" ]; then
+	IMGDATA="imgdata-mac"
+	_7ZIP="7za-mac"
+	ADB="adb-mac"
+	FASTBOOT="fastboot-mac"
+	OPEN="open"
+else
+	IMGDATA="imgdata-linux"
+	_7ZIP="7za-linux"
+	ADB="adb-linux"
+	FASTBOOT="fastboot-linux"
+	OPEN="xdg-open"
+fi
+
+WORKDIR=$(cd "$(dirname "$0")"; pwd)
+cd "$WORKDIR"
+printf "\e[40m"
+while [ 1 ]
+do
+	clear
+	printf "\e[1;37m=============================\n"
+	printf "\e[1;34;47mImgdata extractor and builder\n\e[40m"
+	printf "\e[1;37m=============================\n\n"
+	printf "\e[1;35mSelect an action\n"
+	echo -e "\033[1;35m----------------"
+	printf "\e[37m 1 - Extract imgdata\n"
+	printf " 2 - Preview\n"
+	printf " 3 - Build imgdata\n"
+	printf "\e[1;36m\nType an action number, or X to exit \e[37m"
+	read choice
+	case $choice in
+		"1")
+			extract_f
+			;;
+		"2")
+			preview_menu
+			;;
+		"3")
+			clear
+			build_f
+			;;
+		"x")
+			break
+			;;
+		"X")
+			break
+			;;
+		*)
+	esac
+done
+
+printf "\e[0m"
+clear
+
