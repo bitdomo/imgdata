@@ -48,7 +48,7 @@ int write_background(char *out, char *option){
     strcat(file_path, ".bmp");
     O = fopen(file_path, "wb");
     if (O == NULL){
-        printf("FAIL!\nFailed to open %s", file_path);
+        printf("FAIL!\nFailed to open %s\n", file_path);
         return 1;
     }
     fwrite(BMP_HEADER, sizeof(char), sizeof(BMP_HEADER), O);
@@ -128,7 +128,7 @@ int write_image(char *in, char* out, char *option, raw_image_header RAW_IMAGE_HE
     strcat(file_path, ".bmp");
     O = fopen(file_path, "rb+");
     if (O == NULL){
-        printf("FAIL!\nFailed to open %s", file_path);
+        printf("FAIL!\nFailed to open %s\n", file_path);
         return 1;
     }
 	fseek(O, 0x36, SEEK_SET);
@@ -149,7 +149,7 @@ int write_image(char *in, char* out, char *option, raw_image_header RAW_IMAGE_HE
     strcat(file_path, ".bmp");
     I = fopen(file_path, "rb");
     if (I == NULL){
-        printf("FAIL!\nFailed to open %s", file_path);
+        printf("FAIL!\nFailed to open %s\n", file_path);
         fclose(O);
         return 1;
     }
@@ -192,19 +192,21 @@ int preview(char *option, char *in, char *out){
     char x_pos[5] = { 0 };
 	char y_pos[5] = { 0 };
     char input[256] = { 0 };
+	char temp[256] = { 0 };
     char file_path[256] = { 0 };
-    char *names[] = { "boot", "charger", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode" };
+	char *names[] = { "boot", "charger", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode", "oem_laf", "laf_yes", "laf_no" };
     int for_check = 0;
     unsigned int i = 0, j = 0;
-    raw_image_header RAW_IMAGE_HEADERS[12] = {{{ 0 }}};
+	unsigned int entries = 0;
+    raw_image_header *RAW_IMAGE_HEADERS = NULL;
     FILE *I = NULL;
 
     if ((strcmp(option, "downloadmode") == 0 || strcmp(option, "oem-unlock-no") == 0 || strcmp(option, "oem-unlock-yes") == 0 ||
          strcmp(option, "fastboot-poweroff") == 0 || strcmp(option, "fastboot-recovery") == 0 || strcmp(option, "fastboot-bootloader") == 0 ||
          strcmp(option, "fastboot-start") == 0 || strcmp(option, "charger") == 0 || strcmp(option, "unlocked-boot") == 0 ||
-         strcmp(option, "locked-boot") == 0 || strcmp(option, "all") == 0) == 0)
+         strcmp(option, "locked-boot") == 0 || strcmp(option,"oem-laf-no") == 0 || strcmp(option, "oem-laf-yes") == 0 || strcmp(option, "all") == 0) == 0)
     {
-            printf("\nUnknown option: %s", option);
+            printf("\nUnknown option: %s\n", option);
             return -1;
     }
     strcpy(input, in);
@@ -247,7 +249,30 @@ int preview(char *option, char *in, char *out){
 		printf("FAIL!\nCould not open %s\n", file_path);
 		return -1;
 	}
-	for (i = 0; i < 12; i++){	// Reads pos.txt and does checks for it.
+	c = fgetc(I);
+	while (c != '='){
+		c = fgetc(I);
+	}
+	c = fgetc(I);
+	while (c != 0x0D && c != 0xA){
+		temp[j] = c;
+		j++;
+		c = fgetc(I);
+	}
+	temp[j] = '\0';
+	entries = atoi(temp);
+	if (c == 0x0D){	// If finds CR then skip LF to get to the new line.
+		fgetc(I);
+	}
+	j = 0;
+	RAW_IMAGE_HEADERS = (raw_image_header*)malloc(sizeof(raw_image_header)*entries);
+	for (i = 0; i < entries; i++){
+		for (j = 0; j < 16; j++){
+			RAW_IMAGE_HEADERS[i].name[j] = '\0';
+		}
+	}
+	j = 0;
+	for (i = 0; i < entries; i++){	// Reads pos.txt and does checks for it.
 		c = fgetc(I);
 		while (c != 0x20){	// Reads the name of the images from pos.txt to the actual RAW_IMAGE_HEADERS[i].name until it reaches space
 			RAW_IMAGE_HEADERS[i].name[j] = c;
@@ -273,7 +298,7 @@ int preview(char *option, char *in, char *out){
 			j++;
 			c = fgetc(I);
 			if (j > 4){	// If still not reached the x character then it fails.
-				printf("FAIL!\nCheck \"%s\" in %s\nX position must be maximum 4 digits long\nCheck for the \"x\" too", RAW_IMAGE_HEADERS[i].name, file_path);
+				printf("FAIL!\nCheck \"%s\" in %s\nX position must be maximum 4 digits long\nCheck for the \"x\" too\n", RAW_IMAGE_HEADERS[i].name, file_path);
 				fclose(I);
 				return -1;
 			}
@@ -281,7 +306,7 @@ int preview(char *option, char *in, char *out){
 		x_pos[j] = '\0';
 		RAW_IMAGE_HEADERS[i].x_pos = atoi(x_pos);
 		if (RAW_IMAGE_HEADERS[i].x_pos > 1079){
-			printf("FAIL\nX position %u is exceeded the maximum 1079 for %s", RAW_IMAGE_HEADERS[i].x_pos,RAW_IMAGE_HEADERS[i].name);
+			printf("FAIL\nX position %u is exceeded the maximum 1079 for %s\n", RAW_IMAGE_HEADERS[i].x_pos,RAW_IMAGE_HEADERS[i].name);
 			fclose(I);
 			return -1;
 		}
@@ -292,7 +317,7 @@ int preview(char *option, char *in, char *out){
 			j++;
 			c = fgetc(I);
 			if (j > 4){
-				printf("FAIL!\nCheck \"%s\" .%s\nY position must be maximum 4 digits long\nCheck for new line too", RAW_IMAGE_HEADERS[i].name, file_path);
+				printf("FAIL!\nCheck \"%s\" .%s\nY position must be maximum 4 digits long\nCheck for new line too\n", RAW_IMAGE_HEADERS[i].name, file_path);
 				fclose(I);
 				return -1;
 			}
@@ -300,7 +325,7 @@ int preview(char *option, char *in, char *out){
 		y_pos[j] = '\0';
 		RAW_IMAGE_HEADERS[i].y_pos = atoi(y_pos);
 		if (RAW_IMAGE_HEADERS[i].y_pos > 1919){
-			printf("FAIL\nY position %u is exceeded the maximum 1919 for %s", RAW_IMAGE_HEADERS[i].y_pos, RAW_IMAGE_HEADERS[i].name);
+			printf("FAIL\nY position %u is exceeded the maximum 1919 for %s\n", RAW_IMAGE_HEADERS[i].y_pos, RAW_IMAGE_HEADERS[i].name);
 			fclose(I);
 			return -1;
 		}
@@ -311,7 +336,7 @@ int preview(char *option, char *in, char *out){
 	}
 	printf("Done\n");
 	fclose(I);
-    for (i = 0; i < 12; i++){	// Reads the the BMP files from the given path and stores them in the memory without the extra bytes
+    for (i = 0; i < entries; i++){	// Reads the the BMP files from the given path and stores them in the memory without the extra bytes
 		strcpy(file_path, input);
 #if defined(_WIN32) || defined(WIN32)
         if (file_path[strlen(file_path)] != '\\'){
@@ -353,7 +378,7 @@ int preview(char *option, char *in, char *out){
 		fseek(I, 0x0E, SEEK_SET);
 		c = fgetc(I);
 		if (c == 0x0C){
-            printf("FAIL!\nBITMAPCOREHEADER structure is not supported\nRe-save the editet pictures with Paint, Gimp or Photoshop");
+            printf("FAIL!\nBITMAPCOREHEADER structure is not supported\nRe-save the editet pictures with Paint, Gimp or Photoshop\n");
             fclose(I);
             return -1;
 		}
@@ -488,7 +513,8 @@ int preview(char *option, char *in, char *out){
         printf("\nCreating preview for oem-unlock-yes...");
         if (write_background(out, "oem-unlock-yes") ||
             write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[8]) ||
-            write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[9]))
+            write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[9]) ||
+			write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[2]))
         {
             return -1;
         }
@@ -500,7 +526,8 @@ int preview(char *option, char *in, char *out){
         printf("\nCreating preview for oem-unlock-no...");
         if (write_background(out, "oem-unlock-no") ||
             write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[8]) ||
-            write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[10]))
+            write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[10]) ||
+			write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[2]))
         {
             return -1;
         }
@@ -519,5 +546,36 @@ int preview(char *option, char *in, char *out){
             printf("Done\n");
         }
     }
+	if ((entries == 12) && (strcmp(option, "oem-laf-yes") == 0 || strcmp(option, "oem-laf-no") == 0)){
+		printf("Fail!\nThe %s option only available for imgdata after HHZ12h bootloader\n", option);
+		return -1;
+	}
+	if (entries == 15){
+		if (strcmp(option, "oem-laf-yes") == 0 || strcmp(option, "all") == 0){
+			printf("\nCreating preview for oem-laf-yes...");
+			if (write_background(out, "oem-laf-yes") ||
+				write_image(in, out, "oem-laf-yes", RAW_IMAGE_HEADERS[12]) ||
+				write_image(in, out, "oem-laf-yes", RAW_IMAGE_HEADERS[13]))
+			{
+				return -1;
+			}
+			else{
+				printf("Done\n");
+			}
+		}
+		if (strcmp(option, "oem-laf-no") == 0 || strcmp(option, "all") == 0){
+			printf("\nCreating preview for oem-laf-no...");
+			if (write_background(out, "oem-laf-no") ||
+				write_image(in, out, "oem-laf-no", RAW_IMAGE_HEADERS[12]) ||
+				write_image(in, out, "oem-laf-no", RAW_IMAGE_HEADERS[14]))
+			{
+				return -1;
+			}
+			else{
+				printf("Done\n");
+			}
+		}
+	}
+	free(RAW_IMAGE_HEADERS);
     return 0;
 }

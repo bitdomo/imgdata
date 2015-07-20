@@ -18,7 +18,8 @@ int extract(char *in, char *out){
 	unsigned int i = 0, j = 0, k = 0, l = 0;
 	unsigned int BMP_BYTE = 0;
 	unsigned int extra = 0, BMP_SIZE=0, count = 0, R = 0, G = 0, B = 0;
-	raw_image_header RAW_IMAGE_HEADERS[12];
+	unsigned int entries = 0;
+	raw_image_header *RAW_IMAGE_HEADERS = NULL;
 	FILE *I;
 	FILE *O;
 
@@ -80,9 +81,13 @@ int extract(char *in, char *out){
 		printf("FAIL!\n%s is not valid file\n", input);
 		return -1;
 	}
-
+	fseek(I, 0x0C, SEEK_SET);
+	fread(&entries, sizeof(unsigned int), 1, I);
+	printf("\n%u\n", entries);
+	getchar;
 	fseek(I, 0x18, SEEK_SET);
-	for (i = 0; i < 12; i++){	// Reads the image headers from imgdata
+	RAW_IMAGE_HEADERS = (raw_image_header*)malloc(sizeof(raw_image_header)*entries);
+	for (i = 0; i < entries; i++){	// Reads the image headers from imgdata
 		fread(RAW_IMAGE_HEADERS[i].name, sizeof(char), 16, I);
 		fread(&RAW_IMAGE_HEADERS[i].width, sizeof(unsigned int), 1, I);
 		fread(&RAW_IMAGE_HEADERS[i].height, sizeof(unsigned int),1, I);
@@ -92,7 +97,7 @@ int extract(char *in, char *out){
 		fread(&RAW_IMAGE_HEADERS[i].size, sizeof(unsigned int), 1, I);
 	}
 	printf("Done\n");
-	for (i = 0; i < 12; i++){	// Converts the RLE formated images to BMP pixels
+	for (i = 0; i < entries; i++){	// Converts the RLE formated images to BMP pixels
         strcpy(file_path, output);
 #if defined(_WIN32) || defined(WIN32)
         if (file_path[strlen(file_path)] != '\\'){
@@ -185,7 +190,17 @@ int extract(char *in, char *out){
         return -1;
     }
 	printf("\nWriting pos.txt...");
-	for (i = 0; i < 12; i++){	// Writes out the pos.txt to the given path
+	strcpy(file_path, "entries=");
+	fwrite(file_path, sizeof(char), strlen(file_path), O);
+#if defined(_WIN32) || defined(WIN32)
+	_itoa(entries, pos_data, 10);
+#else
+	snprintf(pos_data, 5, "%u", entries);
+#endif
+	fwrite(pos_data, sizeof(char), strlen(pos_data), O);
+	fputc(0x0D, O);
+	fputc(0x0A, O);
+	for (i = 0; i < entries; i++){	// Writes out the pos.txt to the given path
 		strcpy(file_path, RAW_IMAGE_HEADERS[i].name);
 		fwrite(file_path, sizeof(char), strlen(file_path), O);
 		fputc(0x20, O);
@@ -206,6 +221,7 @@ int extract(char *in, char *out){
 		fputc(0x0A, O);
 	}
 	printf("Done\n");
+	free(RAW_IMAGE_HEADERS);
 	fclose(O);
 	fclose(I);
 	return 0;

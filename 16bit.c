@@ -40,7 +40,7 @@ int _16bit(char *in){
 #endif
     I = fopen(input, "rb");
     if (I == NULL){
-        printf("FAIL!\nFailed to open %s", input);
+        printf("FAIL!\nFailed to open %s\n", input);
         fclose(O);
         return -1;
     }
@@ -67,7 +67,7 @@ int _16bit(char *in){
     fseek(I, 0x0E, SEEK_SET);
     c = fgetc(I);
     if (c == 0x0C){
-        printf("FAIL!\nBITMAPCOREHEADER structure is not supported\nRe-save the editet pictures with Paint, Gimp or Photoshop");
+        printf("FAIL!\nBITMAPCOREHEADER structure is not supported\nRe-save the editet pictures with Paint, Gimp or Photoshop\n");
         fclose(I);
         return -1;
     }
@@ -99,7 +99,7 @@ int _16bit(char *in){
     }
     fseek(I, 0x06, SEEK_SET);
     if (fgetc(I) == 0x01){
-        printf("FAIL!\n%s image is already reduced to 16 bit", input);
+        printf("FAIL!\n%s image is already reduced to 16 bit\n", input);
         return -1;
     }
     printf("OK!");
@@ -146,7 +146,7 @@ int _16bit(char *in){
     strcat(path, file_name);
     O = fopen(path, "wb");
     if (O == NULL){
-        printf("FAIL!\nCould not open %s", path);
+        printf("FAIL!\nCould not open %s\n", path);
     }
     fwrite(image, sizeof(char)*size, 1, O);
     fclose(O);
@@ -260,7 +260,7 @@ int _16bit(char *in){
     }
     O = fopen(input, "wb");
     if (O == NULL){
-        printf("FAIL!\nFailed to open %s", input);
+        printf("FAIL!\nFailed to open %s\n", input);
         fclose(O);
         return -1;
     }
