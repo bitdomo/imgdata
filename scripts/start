@@ -17,6 +17,7 @@ extract_f(){
 		fi
 		temp="${input%\'}"
 		input="${temp#\'}"
+		rm -rf "$WORKDIR"/images/*
 		"$WORKDIR"/tools/$IMGDATA extract "$input" "$WORKDIR"/images
 		errorlevel=$?
 		if [ $errorlevel == 0 ]; then
@@ -52,6 +53,9 @@ extract_f(){
 preview_f(){
 	while [ 1 ]
 	do
+		if [ $choice == "all" ]; then
+			rm -rf "$WORKDIR"/previews/*
+		fi
 		"$WORKDIR"/tools/$IMGDATA preview $choice "$WORKDIR"/images "$WORKDIR"/previews
 		errorlevel=$?
 		if [ $errorlevel == 0 ]; then

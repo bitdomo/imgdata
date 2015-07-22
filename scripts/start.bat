@@ -76,6 +76,7 @@ if errorlevel 1 goto :locked-boot
 :all
 cls
 set option=all
+del .\previews\* /q
 .\tools\imgdata.exe preview %option% .\images\ .\previews\
 set error=%errorlevel%
 if %error% NEQ 0 goto :allerr
@@ -340,6 +341,7 @@ set /P file="")
 if not defined file goto :extract
 if /I %file%==x set x=1&goto :menu
 echo.
+del .\images\* /q
 .\tools\imgdata.exe extract %file% .\images\
 set error=%errorlevel%
 if %error% NEQ 0 goto :eerr
