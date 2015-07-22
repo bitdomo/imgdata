@@ -5,7 +5,7 @@ set PATH=%PATH%;C:\Windows\System32;C:\Windows\SysWOW64
 set cecho=.\tools\cecho
 set choice=Choice.exe
 
-Title Imgdata tool v1.4.0
+Title Imgdata tool v1.3.1
 
 ver | findstr /i "5\.0\." > nul
 IF %ERRORLEVEL% EQU 0  set choice=.\tools\Choice4XP.exe
