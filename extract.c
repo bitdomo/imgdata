@@ -83,7 +83,6 @@ int extract(char *in, char *out){
 	}
 	fseek(I, 0x0C, SEEK_SET);
 	fread(&entries, sizeof(unsigned int), 1, I);
-	printf("\n%u\n", entries);
 	fseek(I, 0x18, SEEK_SET);
 	RAW_IMAGE_HEADERS = (raw_image_header*)malloc(sizeof(raw_image_header)*entries);
 	for (i = 0; i < entries; i++){	// Reads the image headers from imgdata
