@@ -452,6 +452,9 @@ int build(char *in, char *out){
 	if (ftell(O) > 3145728){	// Check the file size of the new imgadata.img. It can't be bigger than 3MB.
 		printf("FAIL!\n%s is too big. Maximum size is 3145728 bytes\n", file_path);
 		fclose(O);
+		free(RAW_IMAGE_HEADERS);
+		free(pixels);
+		free(RAW_IMAGES);
 		return 1;
 	}
 	free(RAW_IMAGE_HEADERS);
