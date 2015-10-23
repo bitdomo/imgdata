@@ -194,7 +194,7 @@ int preview(char *option, char *in, char *out){
     char input[256] = { 0 };
 	char temp[256] = { 0 };
     char file_path[256] = { 0 };
-	char *names[] = { "boot", "charger", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode", "oem_laf", "laf_yes", "laf_no" };
+    char *names[] = { "boot", "charger", "locked", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode" ,"oem_lock", "lock_yes", "lock_no","orange_power", "orange_sleep", "red_power", "red_sleep", "yellow_power", "yellow_sleep"};	// For checking pos.txt
     int for_check = 0;
     unsigned int i = 0, j = 0;
 	unsigned int entries = 0;
@@ -204,7 +204,9 @@ int preview(char *option, char *in, char *out){
     if ((strcmp(option, "downloadmode") == 0 || strcmp(option, "oem-unlock-no") == 0 || strcmp(option, "oem-unlock-yes") == 0 ||
          strcmp(option, "fastboot-poweroff") == 0 || strcmp(option, "fastboot-recovery") == 0 || strcmp(option, "fastboot-bootloader") == 0 ||
          strcmp(option, "fastboot-start") == 0 || strcmp(option, "charger") == 0 || strcmp(option, "unlocked-boot") == 0 ||
-         strcmp(option, "locked-boot") == 0 || strcmp(option,"oem-laf-no") == 0 || strcmp(option, "oem-laf-yes") == 0 || strcmp(option, "all") == 0) == 0)
+         strcmp(option, "locked-boot") == 0 || strcmp(option, "oem-lock-no") == 0 || strcmp(option, "oem-lock-yes") == 0 ||
+         strcmp(option, "yellow-power") == 0 || strcmp(option, "yellow-sleep") == 0 || strcmp(option, "orange-power") == 0 ||
+         strcmp(option, "orange-sleep") == 0 || strcmp(option, "red-power") == 0 || strcmp(option, "red-sleep") == 0 || strcmp(option, "all") == 0) == 0)
     {
             printf("\nUnknown option: %s\n", option);
             return -1;
@@ -442,7 +444,7 @@ int preview(char *option, char *in, char *out){
         printf("\nCreating preview for unlocked-boot...");
         if (write_background(out, "unlocked-boot") ||
             write_image(in, out, "unlocked-boot", RAW_IMAGE_HEADERS[0]) ||
-            write_image(in, out, "unlocked-boot", RAW_IMAGE_HEADERS[2]))
+            write_image(in, out, "unlocked-boot", RAW_IMAGE_HEADERS[3]))
         {
             return -1;
         }
@@ -464,8 +466,8 @@ int preview(char *option, char *in, char *out){
     if (strcmp(option, "fastboot-start") == 0 || strcmp(option, "all") == 0){
         printf("\nCreating preview for fastboot-start...");
         if (write_background(out, "fastboot-start") ||
-            write_image(in, out, "fastboot-start", RAW_IMAGE_HEADERS[7]) ||
-            write_image(in, out, "fastboot-start", RAW_IMAGE_HEADERS[3]))
+            write_image(in, out, "fastboot-start", RAW_IMAGE_HEADERS[8]) ||
+            write_image(in, out, "fastboot-start", RAW_IMAGE_HEADERS[4]))
         {
             return -1;
         }
@@ -476,8 +478,8 @@ int preview(char *option, char *in, char *out){
     if (strcmp(option, "fastboot-bootloader") == 0 || strcmp(option, "all") == 0){
         printf("\nCreating preview for fastboot-bootloader...");
         if (write_background(out, "fastboot-bootloader") ||
-            write_image(in, out, "fastboot-bootloader", RAW_IMAGE_HEADERS[7]) ||
-            write_image(in, out, "fastboot-bootloader", RAW_IMAGE_HEADERS[4]))
+            write_image(in, out, "fastboot-bootloader", RAW_IMAGE_HEADERS[8]) ||
+            write_image(in, out, "fastboot-bootloader", RAW_IMAGE_HEADERS[5]))
         {
             return -1;
         }
@@ -488,8 +490,8 @@ int preview(char *option, char *in, char *out){
     if (strcmp(option, "fastboot-recovery") == 0 || strcmp(option, "all") == 0){
         printf("\nCreating preview for fastboot-recovery...");
         if (write_background(out, "fastboot-recovery") ||
-            write_image(in, out, "fastboot-recovery", RAW_IMAGE_HEADERS[7]) ||
-            write_image(in, out, "fastboot-recovery", RAW_IMAGE_HEADERS[5]))
+            write_image(in, out, "fastboot-recovery", RAW_IMAGE_HEADERS[8]) ||
+            write_image(in, out, "fastboot-recovery", RAW_IMAGE_HEADERS[6]))
         {
             return -1;
         }
@@ -500,8 +502,8 @@ int preview(char *option, char *in, char *out){
     if (strcmp(option, "fastboot-poweroff") == 0 || strcmp(option, "all") == 0){
         printf("\nCreating preview for fastboot-poweroff...");
         if (write_background(out, "fastboot-poweroff") ||
-            write_image(in, out, "fastboot-poweroff", RAW_IMAGE_HEADERS[7]) ||
-            write_image(in, out, "fastboot-poweroff", RAW_IMAGE_HEADERS[6]))
+            write_image(in, out, "fastboot-poweroff", RAW_IMAGE_HEADERS[8]) ||
+            write_image(in, out, "fastboot-poweroff", RAW_IMAGE_HEADERS[7]))
         {
             return -1;
         }
@@ -512,9 +514,9 @@ int preview(char *option, char *in, char *out){
     if (strcmp(option, "oem-unlock-yes") == 0 || strcmp(option, "all") == 0){
         printf("\nCreating preview for oem-unlock-yes...");
         if (write_background(out, "oem-unlock-yes") ||
-            write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[8]) ||
             write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[9]) ||
-			write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[2]))
+            write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[10]) ||
+			write_image(in, out, "oem-unlock-yes", RAW_IMAGE_HEADERS[3]))
         {
             return -1;
         }
@@ -525,9 +527,9 @@ int preview(char *option, char *in, char *out){
     if (strcmp(option, "oem-unlock-no") == 0 || strcmp(option, "all") == 0){
         printf("\nCreating preview for oem-unlock-no...");
         if (write_background(out, "oem-unlock-no") ||
-            write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[8]) ||
-            write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[10]) ||
-			write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[2]))
+            write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[9]) ||
+            write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[11]) ||
+			write_image(in, out, "oem-unlock-no", RAW_IMAGE_HEADERS[3]))
         {
             return -1;
         }
@@ -538,7 +540,7 @@ int preview(char *option, char *in, char *out){
     if (strcmp(option, "downloadmode") == 0 || strcmp(option, "all") == 0){
         printf("\nCreating preview for downloadmode...");
         if (write_background(out, "downloadmode") ||
-            write_image(in, out, "downloadmode", RAW_IMAGE_HEADERS[11]))
+            write_image(in, out, "downloadmode", RAW_IMAGE_HEADERS[12]))
         {
             return -1;
         }
@@ -546,36 +548,98 @@ int preview(char *option, char *in, char *out){
             printf("Done\n");
         }
     }
-	if ((entries == 12) && (strcmp(option, "oem-laf-yes") == 0 || strcmp(option, "oem-laf-no") == 0)){
-		printf("Fail!\nThe %s option only available for imgdata after HHZ12h bootloader\n", option);
-		return -1;
-	}
-	if (entries == 15){
-		if (strcmp(option, "oem-laf-yes") == 0 || strcmp(option, "all") == 0){
-			printf("\nCreating preview for oem-laf-yes...");
-			if (write_background(out, "oem-laf-yes") ||
-				write_image(in, out, "oem-laf-yes", RAW_IMAGE_HEADERS[12]) ||
-				write_image(in, out, "oem-laf-yes", RAW_IMAGE_HEADERS[13]))
-			{
-				return -1;
-			}
-			else{
-				printf("Done\n");
-			}
-		}
-		if (strcmp(option, "oem-laf-no") == 0 || strcmp(option, "all") == 0){
-			printf("\nCreating preview for oem-laf-no...");
-			if (write_background(out, "oem-laf-no") ||
-				write_image(in, out, "oem-laf-no", RAW_IMAGE_HEADERS[12]) ||
-				write_image(in, out, "oem-laf-no", RAW_IMAGE_HEADERS[14]))
-			{
-				return -1;
-			}
-			else{
-				printf("Done\n");
-			}
-		}
-	}
+    if (strcmp(option, "oem-lock-yes") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for oem-lock-yes...");
+        if (write_background(out, "oem-lock-yes") ||
+            write_image(in, out, "oem-lock-yes", RAW_IMAGE_HEADERS[13]) ||
+            write_image(in, out, "oem-lock-yes", RAW_IMAGE_HEADERS[14]) ||
+            write_image(in, out, "oem-lock-yes", RAW_IMAGE_HEADERS[2]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
+    if (strcmp(option, "oem-lock-no") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for oem-lock-no...");
+        if (write_background(out, "oem-lock-no") ||
+            write_image(in, out, "oem-lock-no", RAW_IMAGE_HEADERS[13]) ||
+            write_image(in, out, "oem-lock-no", RAW_IMAGE_HEADERS[15]) ||
+            write_image(in, out, "oem-lock-no", RAW_IMAGE_HEADERS[2]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
+    if (strcmp(option, "yellow-power") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for yellow-power...");
+        if (write_background(out, "yellow-power") ||
+            write_image(in, out, "yellow-power", RAW_IMAGE_HEADERS[20]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
+    if (strcmp(option, "yellow-sleep") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for yellow-sleep...");
+        if (write_background(out, "yellow-sleep") ||
+            write_image(in, out, "yellow-sleep", RAW_IMAGE_HEADERS[21]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
+    if (strcmp(option, "orange-power") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for orange-power...");
+        if (write_background(out, "orange-power") ||
+            write_image(in, out, "orange-power", RAW_IMAGE_HEADERS[16]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
+    if (strcmp(option, "orange-sleep") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for orange-sleep...");
+        if (write_background(out, "orange-sleep") ||
+            write_image(in, out, "orange-sleep", RAW_IMAGE_HEADERS[17]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
+    if (strcmp(option, "red-power") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for red-power...");
+        if (write_background(out, "red-power") ||
+            write_image(in, out, "red-power", RAW_IMAGE_HEADERS[18]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
+    if (strcmp(option, "red-sleep") == 0 || strcmp(option, "all") == 0){
+        printf("\nCreating preview for red-sleep...");
+        if (write_background(out, "red-sleep") ||
+            write_image(in, out, "red-sleep", RAW_IMAGE_HEADERS[19]))
+        {
+            return -1;
+        }
+        else{
+            printf("Done\n");
+        }
+    }
 	free(RAW_IMAGE_HEADERS);
     return 0;
 }

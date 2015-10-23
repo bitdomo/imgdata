@@ -9,7 +9,7 @@ int build(char *in, char *out){
 	char R = 0, G = 0, B = 0;
 	char x_pos[5] = { 0 };
 	char y_pos[5] = { 0 };
-	char *names[] = { "boot", "charger", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode" ,"oem_laf", "laf_yes", "laf_no"};	// For checking pos.txt
+	char *names[] = { "boot", "charger", "locked", "unlocked", "start", "bootloader", "recovery", "poweroff", "fastboot_op", "oem_unlock", "unlock_yes", "unlock_no", "downloadmode" ,"oem_lock", "lock_yes", "lock_no","orange_power", "orange_sleep", "red_power", "red_sleep", "yellow_power", "yellow_sleep"};	// For checking pos.txt
 	char IMGDATA_HEADER1[] = { 'I', 'M', 'G', 'D', 'A', 'T', 'A', '!', 0x01, 0x00, 0x00, 0x00 };
 	char IMGDATA_HEADER2[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };	// Header of imgdata.img
 	char temp[256] = { 0 };
@@ -105,7 +105,7 @@ int build(char *in, char *out){
 		fgetc(I);
 	}
 	j = 0;
-	pixels = (BMP_PIXEL*)malloc(sizeof(BMP_PIXEL)*entries);	
+	pixels = (BMP_PIXEL*)malloc(sizeof(BMP_PIXEL)*entries);
 	RAW_IMAGE_HEADERS = (raw_image_header*)malloc(sizeof(raw_image_header)*entries);
 	for (i = 0; i < entries; i++){
 		for (j = 0; j < 16; j++){
@@ -125,14 +125,14 @@ int build(char *in, char *out){
 			c = fgetc(I);
 			if (j > 15){	// In imgdata.img the the name of the images can't be longer than 15 characters.
 				RAW_IMAGE_HEADERS[i].name[15] = '\0';
-				printf("FAIL!\nUnknown name \"%s\" at line %u in %s\n", RAW_IMAGE_HEADERS[i].name, i + 1, file_path);
+				printf("FAIL!\nUnknown name \"%s\" at line %u in %s\n", RAW_IMAGE_HEADERS[i].name, i + 2, file_path);
 				fclose(I);
 				return -1;
 			}
 		}
 		RAW_IMAGE_HEADERS[i].name[j] = '\0';
 		if (!(strcmp(names[i], RAW_IMAGE_HEADERS[i].name) == 0)){ // If the name is wrong the building fails.
-			printf("FAIL!\nUnknown name \"%s\" at line %u in %s\n", RAW_IMAGE_HEADERS[i].name, i + 1, file_path);
+			printf("FAIL!\nUnknown name \"%s\" at line %u in %s\n", RAW_IMAGE_HEADERS[i].name, i + 2, file_path);
 			fclose(I);
 			return -1;
 		}
