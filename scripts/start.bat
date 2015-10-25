@@ -5,7 +5,7 @@ set PATH=%PATH%;C:\Windows\System32;C:\Windows\SysWOW64
 set cecho=.\tools\cecho
 set choice=Choice.exe
 
-Title Imgdata tool v1.3.1
+Title Imgdata tool v1.0.0 for Nexus 5X
 
 ver | findstr /i "5\.0\." > nul
 IF %ERRORLEVEL% EQU 0  set choice=.\tools\Choice4XP.exe
@@ -18,9 +18,9 @@ ver | findstr /i "6\.2\." > nul
 :menu
 cls
 %cecho% {white}
-echo =============================
-%cecho% {blue on white}Imgdata extractor and builder{#}{\n}
-echo =============================
+echo ==========================================
+%cecho% {blue on white}Imgdata extractor and builder for Nexus 5X{#}{\n}
+echo ==========================================
 echo.
 %cecho% {fuchisa}Select an action{\n}----------------{#}{\n}
 echo.  1 - Extract imgdata
@@ -52,19 +52,31 @@ echo.  6 - View fastboot screen with Power Off
 echo.  7 - View oem unlock screen with no
 echo.  8 - View oem unlock screen with yes
 echo.  9 - View download mode screen
-echo.  A - View oem laf screen with yes
-echo.  B - View oem laf screen with no
-echo.  C - View all
+echo.  A - View oem lock screen with no
+echo.  B - View oem lock screen with yes
+echo.  C - View yellow press power to continue screen
+echo.  D - View yellow press power to pause boot screen
+echo.  E - View orange press power to continue screen
+echo.  F - view orange press power to pause boot screen
+echo.  G - View red press power to continue screen
+echo.  H - View red press power to pause boot screen
+echo.  I - View all
 echo.
 %cecho% {aqua}Type an action number, or X to exit{#}
-%choice% /c 0123456789ABCX /n /m ""
-if errorlevel 14 goto :menu
-if errorlevel 13 goto :all
-if errorlevel 12 goto :oem-laf-no
-if errorlevel 11 goto :oem-laf-yes
+%choice% /c 0123456789ABCDEFGHIX /n /m ""
+if errorlevel 20 goto :menu
+if errorlevel 19 goto :all
+if errorlevel 18 goto :red-sleep
+if errorlevel 17 goto :red-power
+if errorlevel 16 goto :orange-sleep
+if errorlevel 15 goto :orange-power
+if errorlevel 14 goto :yellow-sleep
+if errorlevel 13 goto :yellow-power
+if errorlevel 12 goto :oem-lock-no
+if errorlevel 11 goto :oem-lock-yes
 if errorlevel 10 goto :downloadmode
-if errorlevel 9 goto :oem-unlock-yes
-if errorlevel 8 goto :oem-unlock-no
+if errorlevel 9 goto :oem-unlock-no
+if errorlevel 8 goto :oem-unlock-yes
 if errorlevel 7 goto :fastboot-poweroff
 if errorlevel 6 goto :fastboot-recovery
 if errorlevel 5 goto :fastboot-bootloader
@@ -94,45 +106,165 @@ if errorlevel 1 goto :all
 if errorlevel 2 goto :menu
 if errorlevel 1 goto :all
 
-:oem-laf-no
+:red-sleep
 cls
-set option=oem-laf-no
+set option=red-sleep
 .\tools\imgdata.exe preview %option% .\images\ .\previews\
 set error=%errorlevel%
-if %error% NEQ 0 goto :oem-laf-noerr
+if %error% NEQ 0 goto :red-sleeperr
 .\previews\%option%.bmp
 echo.
 %cecho% {white}Again? (y/n):{#}
 %choice% /c YN /n /m ""
 if errorlevel 2 goto :menu
-if errorlevel 1 goto :oem-laf-no
+if errorlevel 1 goto :red-sleep
 
-:oem-laf-noerr
+:red-sleeperr
 %cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
 %cecho% {white}Try again? (y/n):{#}
 %choice% /c YN /n /m ""
 if errorlevel 2 goto :menu
-if errorlevel 1 goto :oem-laf-no
+if errorlevel 1 goto :red-sleep
 
-:oem-laf-yes
+:red-power
 cls
-set option=oem-laf-yes
+set option=red-power
 .\tools\imgdata.exe preview %option% .\images\ .\previews\
 set error=%errorlevel%
-if %error% NEQ 0 goto :oem-laf-yeserr
+if %error% NEQ 0 goto :red-powererr
 .\previews\%option%.bmp
 echo.
 %cecho% {white}Again? (y/n):{#}
 %choice% /c YN /n /m ""
 if errorlevel 2 goto :menu
-if errorlevel 1 goto :oem-laf-yes
+if errorlevel 1 goto :red-power
 
-:oem-laf-yeserr
+:red-powererr
 %cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
 %cecho% {white}Try again? (y/n):{#}
 %choice% /c YN /n /m ""
 if errorlevel 2 goto :menu
-if errorlevel 1 goto :oem-laf-yes
+if errorlevel 1 goto :red-power
+
+:orange-sleep
+cls
+set option=orange-sleep
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :orange-sleeperr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :orange-sleep
+
+:orange-sleeperr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :orange-sleep
+
+:orange-power
+cls
+set option=orange-power
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :orange-powererr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :orange-power
+
+:orange-powererr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :orange-power
+
+:yellow-sleep
+cls
+set option=yellow-sleep
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :yellow-sleeperr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :yellow-sleep
+
+:yellow-sleeperr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :yellow-sleep
+
+:yellow-power
+cls
+set option=yellow-power
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :yellow-powererr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :yellow-power
+
+:yellow-powererr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :yellow-power
+
+:oem-lock-no
+cls
+set option=oem-lock-no
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :oem-lock-noerr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-lock-no
+
+:oem-lock-noerr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-lock-no
+
+:oem-lock-yes
+cls
+set option=oem-lock-yes
+.\tools\imgdata.exe preview %option% .\images\ .\previews\
+set error=%errorlevel%
+if %error% NEQ 0 goto :oem-lock-yeserr
+.\previews\%option%.bmp
+echo.
+%cecho% {white}Again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-lock-yes
+
+:oem-lock-yeserr
+%cecho% {red}{\n}Something went wrong. Check the lines above.{#}{\n}
+%cecho% {white}Try again? (y/n):{#}
+%choice% /c YN /n /m ""
+if errorlevel 2 goto :menu
+if errorlevel 1 goto :oem-lock-yes
 
 :downloadmode
 cls
@@ -472,11 +604,21 @@ echo.  8 - Convert oem_unlock.bmp
 echo.  9 - Convert unlock_yes.bmp
 echo.  A - Convert unlock_no.bmp
 echo.  B - Convert downloadmode.bmp
+echo.  C - Convert oem_lock.bmp
+echo.  D - Convert lock_yes.bmp
+echo.  E - Convert lock_no.bmp
+echo.  F - Convert locked.bmp
+echo.  G - Convert yellow_power.bmp
+echo.  H - Convert yellow_sleep.bmp
+echo.  I - Convert orange_power.bmp
+echo.  J - Convert orange_sleep.bmp
+echo.  K - Convert red_power.bmp
+echo.  L - Convert red_sleep.bmp
 echo.
 %cecho% {aqua}Type an action number, or X to exit{#}
-%choice% /c 0123456789ABX /n /m ""
+%choice% /c 0123456789ABCDEFGHIJKLX /n /m ""
 set error=%errorlevel%
-if %error% EQU 13 exit 0
+if %error% EQU 23 exit 0
 if %error% EQU 1 set imgchoice=.\images\boot.bmp
 if %error% EQU 2 set imgchoice=.\images\charger.bmp
 if %error% EQU 3 set imgchoice=.\images\unlocked.bmp
@@ -489,6 +631,16 @@ if %error% EQU 9 set imgchoice=.\images\oem_unlock.bmp
 if %error% EQU 10 set imgchoice=.\images\unlock-yes.bmp
 if %error% EQU 11 set imgchoice=.\images\unlock-no.bmp
 if %error% EQU 12 set imgchoice=.\images\downloadmode.bmp
+if %error% EQU 13 set imgchoice=.\images\oem_lock.bmp
+if %error% EQU 14 set imgchoice=.\images\lock_yes.bmp
+if %error% EQU 15 set imgchoice=.\images\lock_no.bmp
+if %error% EQU 16 set imgchoice=.\images\locked.bmp
+if %error% EQU 17 set imgchoice=.\images\yellow_power.bmp
+if %error% EQU 18 set imgchoice=.\images\yellow_sleep.bmp
+if %error% EQU 19 set imgchoice=.\images\orange_power.bmp
+if %error% EQU 20 set imgchoice=.\images\orange_sleep.bmp
+if %error% EQU 21 set imgchoice=.\images\red_power.bmp
+if %error% EQU 22 set imgchoice=.\images\red_sleep.bmp
 cls
 .\tools\imgdata.exe 16bit %imgchoice%
 set error=%errorlevel%

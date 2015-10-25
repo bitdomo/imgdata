@@ -119,9 +119,15 @@ preview_menu(){
 		printf " 7 - View oem unlock screen with no\n"
 		printf " 8 - View oem unlock screen with yes\n"
 		printf " 9 - View download mode screen\n"
-		printf " A - View oem laf screen with yes\n"
-		printf " B - View oem laf screen with no\n"
-		printf " C - View ALL\n"
+		printf " A - View oem lock screen with no\n"
+		printf " B - View oem lock screen with yes\n"
+		printf " C - View yellow press power to continue screen\n"
+		printf " D - View yellow press power to pause boot screen\n"
+		printf " E - View orange press power to continue screen\n"
+		printf " F - view orange press power to pause boot screen\n"
+		printf " G - View red press power to continue screen\n"
+		printf " H - View red press power to pause boot screen\n"
+		printf " I - View all\n"
 		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
 		read choice
 		case $choice in
@@ -176,31 +182,91 @@ preview_menu(){
 				break
 				;;
 			"a")
-				choice="oem-laf-yes"
+				choice="oem-lcok-no"
 				preview_f
 				break
 				;;
 			"A")
-				choice="oem-laf-yes"
+				choice="oem-lock-no"
 				preview_f
 				break
 				;;
 			"b")
-				choice="oem-laf-no"
+				choice="oem-lock-yes"
 				preview_f
 				break
 				;;
 			"B")
-				choice="oem-laf-no"
+				choice="oem-lock-yes"
 				preview_f
 				break
 				;;
 			"c")
-				choice="all"
+				choice="yellow-power"
 				preview_f
 				break
 				;;
 			"C")
+				choice="yellow-power"
+				preview_f
+				break
+				;;
+			"d")
+				choice="yellow-sleep"
+				preview_f
+				break
+				;;
+			"D")
+				choice="yellow-sleep"
+				preview_f
+				break
+				;;
+			"e")
+				choice="orange-power"
+				preview_f
+				break
+				;;
+			"E")
+				choice="orange-power"
+				preview_f
+				break
+				;;
+			"f")
+				choice="orange-sleep"
+				preview_f
+				break
+				;;
+			"F")
+				choice="orange-sleep"
+				preview_f
+				break
+				;;
+			"g")
+				choice="red-power"
+				preview_f
+				break
+				;;
+			"G")
+				choice="red-power"
+				preview_f
+				break
+				;;
+			"h")
+				choice="red-sleep"
+				preview_f
+				break
+				;;
+			"H")
+				choice="red-sleep"
+				preview_f
+				break
+				;;
+			"i")
+				choice="all"
+				preview_f
+				break
+				;;
+			"I")
 				choice="all"
 				preview_f
 				break
@@ -267,6 +333,16 @@ _16bit_menu(){
 		printf " 9 - Convert unlock_yes.bmp\n"
 		printf " A - Convert unlock_no.bmp\n"
 		printf " B - Convert downloadmode.bmp\n"
+		printf " C - Convert oem_lock.bmp\n"
+		printf " D - Convert lock_yes.bmp\n"
+		printf " E - Convert lock_no.bmp\n"
+		printf " F - Convert locked.bmp\n"
+		printf " G - Convert yellow_power.bmp\n"
+		printf " H - Convert yellow_sleep.bmp\n"
+		printf " I - Convert orange_power.bmp\n"
+		printf " J - Convert orange_sleep.bmp\n"
+		printf " K - Convert red_power.bmp\n"
+		printf " L - Convert red_sleep.bmp\n"
 		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
 		read choice
 		case $choice in
@@ -337,6 +413,106 @@ _16bit_menu(){
 				;;
 			"B")
 				choice="$WORKDIR/images/downloadmode.bmp"
+				_16bit_f
+				break
+				;;
+			"c")
+				choice="$WORKDIR/images/oem_lock.bmp"
+				_16bit_f
+				break
+				;;
+			"C")
+				choice="$WORKDIR/images/oem_lock.bmp"
+				_16bit_f
+				break
+				;;
+			"d")
+				choice="$WORKDIR/images/lock_yes.bmp"
+				_16bit_f
+				break
+				;;
+			"D")
+				choice="$WORKDIR/images/lock_yes.bmp"
+				_16bit_f
+				break
+				;;
+			"e")
+				choice="$WORKDIR/images/lock_no.bmp"
+				_16bit_f
+				break
+				;;
+			"E")
+				choice="$WORKDIR/images/lock_no.bmp"
+				_16bit_f
+				break
+				;;
+			"f")
+				choice="$WORKDIR/images/locked.bmp"
+				_16bit_f
+				break
+				;;
+			"F")
+				choice="$WORKDIR/images/locked.bmp"
+				_16bit_f
+				break
+				;;
+			"g")
+				choice="$WORKDIR/images/yellow_power.bmp"
+				_16bit_f
+				break
+				;;
+			"G")
+				choice="$WORKDIR/images/yellow_power.bmp"
+				_16bit_f
+				break
+				;;
+			"h")
+				choice="$WORKDIR/images/yellow_sleep.bmp"
+				_16bit_f
+				break
+				;;
+			"H")
+				choice="$WORKDIR/images/yellow_sleep.bmp"
+				_16bit_f
+				break
+				;;
+			"i")
+				choice="$WORKDIR/images/orange_power.bmp"
+				_16bit_f
+				break
+				;;
+			"I")
+				choice="$WORKDIR/images/orange_power.bmp"
+				_16bit_f
+				break
+				;;
+			"j")
+				choice="$WORKDIR/images/orange_sleep.bmp"
+				_16bit_f
+				break
+				;;
+			"J")
+				choice="$WORKDIR/images/orange_sleep.bmp"
+				_16bit_f
+				break
+				;;
+			"k")
+				choice="$WORKDIR/images/red_power.bmp"
+				_16bit_f
+				break
+				;;
+			"K")
+				choice="$WORKDIR/images/red_power.bmp"
+				_16bit_f
+				break
+				;;
+			"l")
+				choice="$WORKDIR/images/red_sleep.bmp"
+				_16bit_f
+				break
+				;;
+			"L")
+				choice="$WORKDIR/images/red_sleep.bmp"
 				_16bit_f
 				break
 				;;
@@ -519,7 +695,7 @@ build_f(){
 	done
 }
 
-printf "\e]2;Imgdata tool v1.3.1\a"
+printf "\e]2;Imgdata tool v1.0.0 for Nexus 5X\a"
 
 if [ "$(uname)" == "Darwin" ]; then
 	IMGDATA="imgdata-mac"
@@ -541,9 +717,9 @@ printf "\e[40m"
 while [ 1 ]
 do
 	clear
-	printf "\e[1;37m=============================\n"
-	printf "\e[1;34;47mImgdata extractor and builder\n\e[40m"
-	printf "\e[1;37m=============================\n\n"
+	printf "\e[1;37m==========================================\n"
+	printf "\e[1;34;47mImgdata extractor and builder for Nexus 5X\n\e[40m"
+	printf "\e[1;37m==========================================\n\n"
 	printf "\e[1;35mSelect an action\n"
 	echo -e "\033[1;35m----------------"
 	printf "\e[37m 1 - Extract imgdata\n"
