@@ -182,7 +182,7 @@ preview_menu(){
 				break
 				;;
 			"a")
-				choice="oem-lcok-no"
+				choice="oem-lock-no"
 				preview_f
 				break
 				;;
