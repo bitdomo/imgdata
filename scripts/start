@@ -7,8 +7,8 @@ extract_f(){
 		while [ -z "$input" ]
 		do
 			clear
-			printf "\e[1;36mDrag \'n Drop here the imgdata file or give its path and press [enter].\nPress x and [enter] to cancel: \e[37m"
-			read input
+			printf "\e[1;36mDrag \'n Drop here the imgdata file or give its path and press [enter].\nPress x and [enter] to cancel:\n\e[37m"
+			read -e input
 			printf "\n"
 		done
 		if [ "$input" == "x" ] || [ "$input" == "X" ]; then
@@ -704,10 +704,17 @@ if [ "$(uname)" == "Darwin" ]; then
 	FASTBOOT="fastboot-mac"
 	OPEN="open"
 else
-	IMGDATA="imgdata-linux"
-	_7ZIP="7za-linux"
-	ADB="adb-linux"
-	FASTBOOT="fastboot-linux"
+	if [ "$(uname -m)" == "x86_64" ]; then
+		IMGDATA="imgdata-linux_64"
+		_7ZIP="7za-linux_64"
+		ADB="adb-linux_64"
+		FASTBOOT="fastboot-linux_64"
+	else
+		IMGDATA="imgdata-linux_32"
+		_7ZIP="7za-linux_32"
+		ADB="adb-linux_32"
+		FASTBOOT="fastboot-linux_32"
+	fi
 	OPEN="xdg-open"
 fi
 
