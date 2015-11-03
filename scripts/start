@@ -552,7 +552,7 @@ build_f(){
 	done
 }
 
-printf "\e]2;Imgdata tool v1.3.1\a"
+printf "\e]2;Imgdata tool v1.3.2 for Nexus 5\a"
 
 if [ "$(uname)" == "Darwin" ]; then
 	IMGDATA="imgdata-mac"
