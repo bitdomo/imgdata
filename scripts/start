@@ -725,7 +725,7 @@ while [ ! -f  "$WORKDIR"/tools/NEXUS5X ]
 do
 	clear
 	printf "\e[41m                                                 \n"
-	printf " \e[40m This tool is for \e[31mNexus 5X\e[37m and not for \e[31mNexus 5 \e[41m \n"
+	printf " \e[40m\e[37m This tool is for \e[31mNexus 5X\e[37m and not for \e[31mNexus 5 \e[41m \n"
 	printf "\e[41m                                                 \n\n"
 	printf "\e[40m\e[37mPlease type \e[31mNEXUS 5X\e[37m (case sensitive): "
 	read -e model
