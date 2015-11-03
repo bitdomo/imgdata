@@ -1,11 +1,9 @@
 @echo off
 cd /d %~dp0
-set workdir=%~dp0
-set PATH=%PATH%;C:\Windows\System32;C:\Windows\SysWOW64
 set cecho=.\tools\cecho
 set choice=Choice.exe
 
-Title Imgdata tool v1.3.1
+Title Imgdata tool v1.3.2 for Nexus 5
 
 ver | findstr /i "5\.0\." > nul
 IF %ERRORLEVEL% EQU 0  set choice=.\tools\Choice4XP.exe
@@ -15,12 +13,27 @@ ver | findstr /i "5\.2\." > nul
 IF %ERRORLEVEL% EQU 0 set choice=.\tools\Choice4XP.exe
 ver | findstr /i "6\.2\." > nul
 
+:model_check
+cls
+if exist  .\tools\NEXUS5 goto :menu
+%cecho% {red on red}                                                 {#}{\n}
+%cecho% {red on red} {white on black} This tool is for {red}Nexus 5 {white}and not for {red}Nexus 5X {red on red} {#}{\n}
+%cecho% {red on red}                                                 {#}{\n}{\n}
+%cecho% {white on black}Please type {red}NEXUS 5 {white}(case sensitive): 
+:model_checkret
+set model=
+set /p model=
+if "%model%" == " " goto :model_checkret
+if "%model%" == "" goto :model_checkret
+if "%model%" == "NEXUS 5" echo 2>.\tools\NEXUS5
+goto :model_check
+
 :menu
 cls
 %cecho% {white}
-echo =============================
-%cecho% {blue on white}Imgdata extractor and builder{#}{\n}
-echo =============================
+echo =========================================
+%cecho% {blue on white}Imgdata extractor and builder for Nexus 5{#}{\n}
+echo =========================================
 echo.
 %cecho% {fuchisa}Select an action{\n}----------------{#}{\n}
 echo.  1 - Extract imgdata
@@ -472,11 +485,14 @@ echo.  8 - Convert oem_unlock.bmp
 echo.  9 - Convert unlock_yes.bmp
 echo.  A - Convert unlock_no.bmp
 echo.  B - Convert downloadmode.bmp
+echo.  C - Convert oem_laf.bmp
+echo.  D - Convert laf_yes.bmp
+echo.  E - Convert laf_no.bmp
 echo.
 %cecho% {aqua}Type an action number, or X to exit{#}
-%choice% /c 0123456789ABX /n /m ""
+%choice% /c 0123456789ABCDEX /n /m ""
 set error=%errorlevel%
-if %error% EQU 13 exit 0
+if %error% EQU 16 exit 0
 if %error% EQU 1 set imgchoice=.\images\boot.bmp
 if %error% EQU 2 set imgchoice=.\images\charger.bmp
 if %error% EQU 3 set imgchoice=.\images\unlocked.bmp
@@ -489,6 +505,9 @@ if %error% EQU 9 set imgchoice=.\images\oem_unlock.bmp
 if %error% EQU 10 set imgchoice=.\images\unlock-yes.bmp
 if %error% EQU 11 set imgchoice=.\images\unlock-no.bmp
 if %error% EQU 12 set imgchoice=.\images\downloadmode.bmp
+if %error% EQU 13 set imgchoice=.\images\oem_laf.bmp
+if %error% EQU 14 set imgchoice=.\images\laf_yes.bmp
+if %error% EQU 15 set imgchoice=.\images\laf_no.bmp
 cls
 .\tools\imgdata.exe 16bit %imgchoice%
 set error=%errorlevel%

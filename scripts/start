@@ -8,7 +8,7 @@ extract_f(){
 		do
 			clear
 			printf "\e[1;36mDrag \'n Drop here the imgdata file or give its path and press [enter].\nPress x and [enter] to cancel: \e[37m"
-			read input
+			read -e input
 			printf "\n"
 		done
 		if [ "$input" == "x" ] || [ "$input" == "X" ]; then
@@ -119,9 +119,9 @@ preview_menu(){
 		printf " 7 - View oem unlock screen with no\n"
 		printf " 8 - View oem unlock screen with yes\n"
 		printf " 9 - View download mode screen\n"
-		printf " A - View oem laf screen with yes\n"
-		printf " B - View oem laf screen with no\n"
-		printf " C - View ALL\n"
+		printf " A - View oem laf screen with no\n"
+		printf " B - View oem laf screen with yes\n"
+		printf " C - View all\n"
 		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
 		read choice
 		case $choice in
@@ -176,22 +176,22 @@ preview_menu(){
 				break
 				;;
 			"a")
-				choice="oem-laf-yes"
+				choice="oem-laf-no"
 				preview_f
 				break
 				;;
 			"A")
-				choice="oem-laf-yes"
+				choice="oem-laf-no"
 				preview_f
 				break
 				;;
 			"b")
-				choice="oem-laf-no"
+				choice="oem-laf-yes"
 				preview_f
 				break
 				;;
 			"B")
-				choice="oem-laf-no"
+				choice="oem-laf-yes"
 				preview_f
 				break
 				;;
@@ -267,6 +267,9 @@ _16bit_menu(){
 		printf " 9 - Convert unlock_yes.bmp\n"
 		printf " A - Convert unlock_no.bmp\n"
 		printf " B - Convert downloadmode.bmp\n"
+		printf " C - Convert oem_laf.bmp\n"
+		printf " D - Convert laf_yes.bmp\n"
+		printf " E - Convert laf_no.bmp\n"
 		printf "\e[1;36m\nType an action number, or X to exit \e[37m"
 		read choice
 		case $choice in
@@ -337,6 +340,36 @@ _16bit_menu(){
 				;;
 			"B")
 				choice="$WORKDIR/images/downloadmode.bmp"
+				_16bit_f
+				break
+				;;
+			"c")
+				choice="$WORKDIR/images/oem_laf.bmp"
+				_16bit_f
+				break
+				;;
+			"C")
+				choice="$WORKDIR/images/oem_laf.bmp"
+				_16bit_f
+				break
+				;;
+			"d")
+				choice="$WORKDIR/images/oem_laf.bmp"
+				_16bit_f
+				break
+				;;
+			"D")
+				choice="$WORKDIR/images/oem_laf.bmp"
+				_16bit_f
+				break
+				;;
+			"e")
+				choice="$WORKDIR/images/oem_no.bmp"
+				_16bit_f
+				break
+				;;
+			"E")
+				choice="$WORKDIR/images/oem_no.bmp"
 				_16bit_f
 				break
 				;;
@@ -528,22 +561,43 @@ if [ "$(uname)" == "Darwin" ]; then
 	FASTBOOT="fastboot-mac"
 	OPEN="open"
 else
-	IMGDATA="imgdata-linux"
-	_7ZIP="7za-linux"
-	ADB="adb-linux"
-	FASTBOOT="fastboot-linux"
+	if [ "$(uname -m)" == "x86_64" ]; then
+		IMGDATA="imgdata-linux_64"
+		_7ZIP="7za-linux_64"
+		ADB="adb-linux_64"
+		FASTBOOT="fastboot-linux_64"
+	else
+		IMGDATA="imgdata-linux_32"
+		_7ZIP="7za-linux_32"
+		ADB="adb-linux_32"
+		FASTBOOT="fastboot-linux_32"
+	fi
 	OPEN="xdg-open"
 fi
 
 WORKDIR=$(cd "$(dirname "$0")"; pwd)
 cd "$WORKDIR"
 printf "\e[40m"
+
+while [ ! -f  "$WORKDIR"/tools/NEXUS5 ]
+do
+	clear
+	printf "\e[41m                                                 \n"
+	printf " \e[40m\e[37m This tool is for \e[31mNexus 5\e[37m and not for \e[31mNexus 5X \e[41m \n"
+	printf "\e[41m                                                 \n\n"
+	printf "\e[40m\e[37mPlease type \e[31mNEXUS 5\e[37m (case sensitive): "
+	read -e model
+	if [ "$model" == "NEXUS 5" ]; then
+		touch "$WORKDIR"/tools/NEXUS5
+	fi
+done
+
 while [ 1 ]
 do
 	clear
-	printf "\e[1;37m=============================\n"
-	printf "\e[1;34;47mImgdata extractor and builder\n\e[40m"
-	printf "\e[1;37m=============================\n\n"
+	printf "\e[1;37m=========================================\n"
+	printf "\e[1;34;47mImgdata extractor and builder for Nexus 5\n\e[40m"
+	printf "\e[1;37m=========================================\n\n"
 	printf "\e[1;35mSelect an action\n"
 	echo -e "\033[1;35m----------------"
 	printf "\e[37m 1 - Extract imgdata\n"
