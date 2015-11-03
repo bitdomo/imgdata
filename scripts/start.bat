@@ -349,7 +349,7 @@ if errorlevel 1 goto :locked-boot
 
 :extract
 cls
-%cecho% {aqua}Drag 'n Drop here the imgdata file or give its path and press [enter].{\n}Press x and [enter] to cancel: {white}
+%cecho% {aqua}Drag 'n Drop here the imgdata file or give its path and press [enter].{\n}Press x and [enter] to cancel:{\n}{white}
 set /P file="")
 if not defined file goto :extract
 if /I %file%==x set x=1&goto :menu

@@ -7,7 +7,7 @@ extract_f(){
 		while [ -z "$input" ]
 		do
 			clear
-			printf "\e[1;36mDrag \'n Drop here the imgdata file or give its path and press [enter].\nPress x and [enter] to cancel: \e[37m"
+			printf "\e[1;36mDrag \'n Drop here the imgdata file or give its path and press [enter].\nPress x and [enter] to cancel:\n\e[37m"
 			read -e input
 			printf "\n"
 		done
