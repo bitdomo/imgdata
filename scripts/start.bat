@@ -1,7 +1,5 @@
 @echo off
 cd /d %~dp0
-set workdir=%~dp0
-set PATH=%PATH%;C:\Windows\System32;C:\Windows\SysWOW64
 set cecho=.\tools\cecho
 set choice=Choice.exe
 
@@ -14,6 +12,21 @@ IF %ERRORLEVEL% EQU 0 set choice=.\tools\Choice4XP.exe
 ver | findstr /i "5\.2\." > nul
 IF %ERRORLEVEL% EQU 0 set choice=.\tools\Choice4XP.exe
 ver | findstr /i "6\.2\." > nul
+
+:model_check
+cls
+if exist  .\tools\NEXUS5X goto :menu
+%cecho% {red on red}                                                 {#}{\n}
+%cecho% {red on red} {white on black} This tool is for {red}Nexus 5X {white}and not for {red}Nexus 5 {red on red} {#}{\n}
+%cecho% {red on red}                                                 {#}{\n}{\n}
+%cecho% {white on black}Please type {red}NEXUS 5X {white}(case sensitive): 
+:model_checkret
+set model=
+set /p model=
+if "%model%" == " " goto :model_checkret
+if "%model%" == "" goto :model_checkret
+if "%model%" == "NEXUS 5X" echo 2>.\tools\NEXUS5X
+goto :model_check
 
 :menu
 cls
